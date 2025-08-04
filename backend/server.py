@@ -1,13 +1,18 @@
 import os
 import csv
 import requests
+import base64
+import io
 from typing import List, Dict, Optional
 from datetime import datetime
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from pymongo import MongoClient
+from pymongo.errors import DuplicateKeyError
 import uuid
 import random
+from PIL import Image
 
 app = FastAPI()
 
