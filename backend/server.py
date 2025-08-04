@@ -477,7 +477,7 @@ async def get_department_employees(department_name: str):
 
 @app.get("/api/field-values")
 async def get_field_values():
-    """Get all unique values for each searchable field (changed grades to designations)"""
+    """Get all unique values for each searchable field (changed grades to designations, added extension_numbers)"""
     field_values = {
         'departments': list(set(emp.get('department', '') for emp in employees_data if emp.get('department'))),
         'locations': list(set(emp.get('location', '') for emp in employees_data if emp.get('location'))),
@@ -485,6 +485,7 @@ async def get_field_values():
         'emp_codes': list(set(emp.get('emp_code', '') for emp in employees_data if emp.get('emp_code'))),
         'emp_names': list(set(emp.get('emp_name', '') for emp in employees_data if emp.get('emp_name'))),
         'mobiles': list(set(emp.get('mobile', '') for emp in employees_data if emp.get('mobile'))),
+        'extension_numbers': list(set(emp.get('extension_number', '') for emp in employees_data if emp.get('extension_number'))),
         'emails': list(set(emp.get('email', '') for emp in employees_data if emp.get('email')))
     }
     
