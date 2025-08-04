@@ -232,7 +232,7 @@ class BackendTester:
             multi_filter = {
                 "department": "IT",
                 "location": "IFC",
-                "grade": "IT EXECUTIVE"
+                "designation": "IT EXECUTIVE"
             }
             
             response = self.session.get(f"{API_BASE}/employees/filter", params=multi_filter)
