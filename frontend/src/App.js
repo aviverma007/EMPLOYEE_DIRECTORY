@@ -606,14 +606,14 @@ function App() {
             </div>
             
             <div className="flex items-center space-x-3">
-              <span className="text-professional-muted font-medium">View:</span>
-              <div className="flex bg-gray-200 rounded-lg overflow-hidden">
+              <span className="text-professional-muted dark:text-gray-300 font-medium">View:</span>
+              <div className="flex bg-gray-200 dark:bg-gray-600 rounded-lg overflow-hidden">
                 <button
                   onClick={() => setViewMode('card')}
                   className={`px-4 py-2 font-medium transition-all duration-200 ${
                     viewMode === 'card' 
                       ? 'bg-blue-600 text-white shadow-lg' 
-                      : 'text-gray-700 hover:bg-gray-300'
+                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-500'
                   }`}
                 >
                   🎴 Cards
@@ -623,7 +623,7 @@ function App() {
                   className={`px-4 py-2 font-medium transition-all duration-200 ${
                     viewMode === 'list' 
                       ? 'bg-blue-600 text-white shadow-lg' 
-                      : 'text-gray-700 hover:bg-gray-300'
+                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-500'
                   }`}
                 >
                   📋 List
