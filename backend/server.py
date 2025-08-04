@@ -469,7 +469,8 @@ async def get_field_values():
         'designations': list(set(emp.get('designation', '') for emp in employees_data if emp.get('designation'))),  # Changed from grades
         'emp_codes': list(set(emp.get('emp_code', '') for emp in employees_data if emp.get('emp_code'))),
         'emp_names': list(set(emp.get('emp_name', '') for emp in employees_data if emp.get('emp_name'))),
-        'mobiles': list(set(emp.get('mobile', '') for emp in employees_data if emp.get('mobile')))
+        'mobiles': list(set(emp.get('mobile', '') for emp in employees_data if emp.get('mobile'))),
+        'emails': list(set(emp.get('email', '') for emp in employees_data if emp.get('email')))
     }
     
     return field_values
