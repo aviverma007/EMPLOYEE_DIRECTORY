@@ -190,7 +190,7 @@ def fetch_employee_data():
                 if i < len(values) and header in COLUMN_MAPPING:
                     employee[COLUMN_MAPPING[header]] = values[i]
             
-            # Ensure all required fields exist (changed grade to designation)
+            # Ensure all required fields exist (changed grade to designation, added extension_number)
             required_fields = ['emp_code', 'emp_name', 'department', 'location', 'designation', 'mobile']
             if all(field in employee for field in required_fields):
                 employees_data.append(employee)
