@@ -105,7 +105,7 @@ def validate_image(file_content: bytes, max_size_mb: int = 5) -> tuple[bool, str
 
 def get_employee_image_from_db(emp_code: str) -> Optional[str]:
     """Get employee image from MongoDB"""
-    if not images_collection:
+    if images_collection is None:
         return None
     
     try:
