@@ -55,8 +55,7 @@
 /* Focus states */
 input:focus {
   outline: none;
-  ring: 2;
-  ring-indigo-500;
+  @apply ring-2 ring-indigo-500;
   border-color: transparent;
 }
 
