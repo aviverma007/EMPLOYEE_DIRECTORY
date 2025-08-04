@@ -277,18 +277,6 @@ function App() {
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
-  useEffect(() => {
-    fetchAllEmployees();
-    fetchFieldValues();
-    
-    // Load theme preference from localStorage
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-      setDarkMode(true);
-      document.documentElement.classList.add('dark');
-    }
-  }, []);
-
   const toggleTheme = () => {
     const newDarkMode = !darkMode;
     setDarkMode(newDarkMode);
@@ -305,6 +293,13 @@ function App() {
   useEffect(() => {
     fetchAllEmployees();
     fetchFieldValues();
+    
+    // Load theme preference from localStorage
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      setDarkMode(true);
+      document.documentElement.classList.add('dark');
+    }
   }, []);
 
   const showToast = (message, type = 'info') => {
