@@ -635,6 +635,7 @@ function App() {
                         key={idx}
                         onClick={() => selectSuggestion(key, suggestion)}
                         className="suggestion-item"
+                        title={`Select: ${suggestion}`}
                       >
                         {suggestion}
                       </div>
