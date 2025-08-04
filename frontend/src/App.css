@@ -521,13 +521,77 @@ button:hover::before {
 
 /* Enhanced Search Input */
 .search-input {
-  @apply w-full px-4 py-3 bg-white border-2 border-blue-200 rounded-xl focus:ring-4 focus:ring-blue-500 focus:ring-opacity-20 focus:border-blue-500 transition-all duration-300 text-gray-800 placeholder-gray-400;
+  @apply w-full pl-12 pr-4 py-3 bg-white border-2 border-blue-200 rounded-xl focus:ring-4 focus:ring-blue-500 focus:ring-opacity-20 focus:border-blue-500 transition-all duration-300 text-gray-800 placeholder-gray-400;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
 }
 
 .search-input:focus {
   box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1), 0 2px 4px -1px rgba(59, 130, 246, 0.06);
   transform: translateY(-1px);
+}
+
+.search-input-icon {
+  @apply absolute left-3 top-1/2 transform -translate-y-1/2 text-lg pointer-events-none z-10;
+}
+
+/* Dark Theme Styles */
+.dark {
+  @apply bg-gray-900 text-white;
+}
+
+.dark .glass-effect {
+  backdrop-filter: blur(16px) saturate(180%);
+  background: rgba(31, 41, 55, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark .search-input {
+  @apply bg-gray-700 border-gray-600 text-white placeholder-gray-300;
+}
+
+.dark .search-input:focus {
+  @apply border-blue-400 ring-blue-400;
+}
+
+.dark .employee-card {
+  @apply bg-gradient-to-br from-gray-800 to-gray-700 border-gray-600;
+}
+
+.dark .table-container {
+  @apply bg-gray-800;
+}
+
+.dark .table-header {
+  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+}
+
+.dark .suggestion-item {
+  @apply text-gray-200 bg-gray-700 border-gray-600;
+}
+
+.dark .suggestion-item:hover {
+  @apply bg-gray-600;
+}
+
+.dark .suggestions-dropdown {
+  @apply bg-gray-700 border-gray-600;
+}
+
+.dark .toast-success {
+  @apply bg-green-900 border-green-400 text-green-200;
+}
+
+.dark .toast-error {
+  @apply bg-red-900 border-red-400 text-red-200;
+}
+
+.dark .toast-info {
+  @apply bg-blue-900 border-blue-400 text-blue-200;
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+  @apply fixed top-4 right-4 z-50 w-12 h-12 bg-white dark:bg-gray-800 rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 flex items-center justify-center text-xl border-2 border-blue-200 dark:border-gray-600;
 }
 
 /* Ripple Effect */
