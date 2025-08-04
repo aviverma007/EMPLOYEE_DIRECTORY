@@ -87,15 +87,6 @@ class AttendanceRecord(BaseModel):
     status: str
     hours_worked: Optional[float] = None
 
-class AttendanceRecord(BaseModel):
-    emp_code: str
-    emp_name: str
-    date: str
-    check_in: str
-    check_out: Optional[str] = None
-    status: str
-    hours_worked: Optional[float] = None
-
 def fetch_employee_data():
     """Fetch employee data from Google Sheets"""
     global employees_data
