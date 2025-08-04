@@ -603,7 +603,7 @@ function App() {
       <div className="container mx-auto px-6">
         {/* Enhanced Search Section */}
         <div className="glass-effect rounded-professional shadow-professional-lg p-6 mb-6 border-professional animate-slide-up">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-6">
             {searchFieldsConfig.map(({ key, label, placeholder, icon }) => (
               <div key={key} className="relative">
                 <div className="relative">
