@@ -1,5 +1,243 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
+
+// Toast Notification Component
+const Toast = ({ message, type, onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 4000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <div className={`toast toast-${type}`}>
+      <div className="flex items-center">
+        <span className="mr-2 text-lg">
+          {type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}
+        </span>
+        <p className="font-medium">{message}</p>
+        <button onClick={onClose} className="ml-4 text-xl hover:opacity-70">×</button>
+      </div>
+    </div>
+  );
+};
+
+// Image Upload Component
+const ImageUpload = ({ employeeCode, currentImage, onImageUpdate, onClose }) => {
+  const [dragActive, setDragActive] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [preview, setPreview] = useState(currentImage);
+  const fileInputRef = useRef(null);
+
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleFileInput = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      handleFile(e.target.files[0]);
+    }
+  };
+
+  const handleFile = async (file) => {
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    // Validate file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size must be less than 5MB');
+      return;
+    }
+
+    // Show preview
+    const reader = new FileReader();
+    reader.onload = (e) => setPreview(e.target.result);
+    reader.readAsDataURL(file);
+
+    // Upload file
+    setUploading(true);
+    setUploadProgress(0);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Simulate progress
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => prev < 90 ? prev + 10 : prev);
+      }, 100);
+
+      const backendUrl = process.env.REACT_APP_BACKEND_URL;
+      const response = await fetch(`${backendUrl}/api/employees/${employeeCode}/image`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+
+      if (response.ok) {
+        const result = await response.json();
+        onImageUpdate(result.image_url, 'Image uploaded successfully!');
+        setTimeout(onClose, 1000);
+      } else {
+        const error = await response.json();
+        throw new Error(error.detail || 'Upload failed');
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      alert(`Upload failed: ${error.message}`);
+    } finally {
+      setUploading(false);
+      setUploadProgress(0);
+    }
+  };
+
+  const handleRemoveImage = async () => {
+    if (!currentImage) return;
+    
+    if (!confirm('Are you sure you want to remove this image?')) return;
+
+    try {
+      const backendUrl = process.env.REACT_APP_BACKEND_URL;
+      const response = await fetch(`${backendUrl}/api/employees/${employeeCode}/image`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        onImageUpdate(null, 'Image removed successfully!');
+        setPreview(null);
+        setTimeout(onClose, 1000);
+      } else {
+        const error = await response.json();
+        throw new Error(error.detail || 'Failed to remove image');
+      }
+    } catch (error) {
+      console.error('Remove error:', error);
+      alert(`Failed to remove image: ${error.message}`);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 modal-backdrop flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl shadow-2xl p-8 m-4 max-w-md w-full modal-enter">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-2xl font-bold text-blue-800">Upload Employee Image</h3>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Image Preview */}
+        {preview && (
+          <div className="mb-6 text-center">
+            <div className="inline-block relative">
+              <img
+                src={preview}
+                alt="Preview"
+                className="image-preview mx-auto"
+                style={{ maxWidth: '150px', maxHeight: '150px' }}
+              />
+              {currentImage && (
+                <div className="image-actions">
+                  <button
+                    onClick={handleRemoveImage}
+                    className="btn-danger text-sm px-3 py-1"
+                  >
+                    Remove
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Upload Area */}
+        <div
+          className={`image-upload-container ${dragActive ? 'image-upload-active' : ''}`}
+          onDragEnter={handleDrag}
+          onDragLeave={handleDrag}
+          onDragOver={handleDrag}
+          onDrop={handleDrop}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileInput}
+            className="hidden"
+          />
+          
+          <div className="text-center">
+            <div className="text-4xl mb-4 text-blue-500">📸</div>
+            <p className="text-blue-800 font-semibold mb-2">
+              {dragActive ? 'Drop image here' : 'Click or drag image to upload'}
+            </p>
+            <p className="text-gray-600 text-sm">
+              Supports JPG, PNG, GIF, WEBP (Max 5MB)
+            </p>
+          </div>
+        </div>
+
+        {/* Upload Progress */}
+        {uploading && (
+          <div className="mt-4">
+            <div className="flex justify-between text-sm text-gray-600 mb-2">
+              <span>Uploading...</span>
+              <span>{uploadProgress}%</span>
+            </div>
+            <div className="upload-progress">
+              <div 
+                className="upload-progress-bar"
+                style={{ width: `${uploadProgress}%` }}
+              ></div>
+            </div>
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex gap-4 mt-6">
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="flex-1 btn-primary disabled:opacity-50"
+          >
+            {uploading ? 'Uploading...' : 'Select Image'}
+          </button>
+          <button
+            onClick={onClose}
+            className="flex-1 btn-secondary"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 function App() {
   const [employees, setEmployees] = useState([]);
@@ -20,6 +258,8 @@ function App() {
   const [attendance, setAttendance] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showAllEmployees, setShowAllEmployees] = useState(false);
+  const [showImageUpload, setShowImageUpload] = useState(false);
+  const [toast, setToast] = useState(null);
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
@@ -27,6 +267,14 @@ function App() {
     fetchAllEmployees();
     fetchFieldValues();
   }, []);
+
+  const showToast = (message, type = 'info') => {
+    setToast({ message, type });
+  };
+
+  const hideToast = () => {
+    setToast(null);
+  };
 
   const fetchAllEmployees = async () => {
     try {
@@ -37,6 +285,7 @@ function App() {
       setLoading(false);
     } catch (error) {
       console.error('Error fetching employees:', error);
+      showToast('Failed to load employees', 'error');
       setLoading(false);
     }
   };
@@ -56,7 +305,6 @@ function App() {
     setSearchFields(newSearchFields);
 
     if (value.length > 0) {
-      // Get suggestions based on field values
       const fieldKey = field === 'emp_name' ? 'emp_names' :
                        field === 'emp_code' ? 'emp_codes' :
                        field === 'department' ? 'departments' :
@@ -76,7 +324,6 @@ function App() {
       setShowSuggestions(prev => ({ ...prev, [field]: false }));
     }
 
-    // Apply filters when user types
     applyFilters(newSearchFields);
   };
 
@@ -89,7 +336,6 @@ function App() {
   };
 
   const applyFilters = async (filters = searchFields) => {
-    // Remove empty filters
     const activeFilters = Object.entries(filters).filter(([key, value]) => value.trim() !== '');
     
     if (activeFilters.length === 0) {
@@ -109,13 +355,14 @@ function App() {
       setShowAllEmployees(false);
     } catch (error) {
       console.error('Error filtering employees:', error);
+      showToast('Error filtering employees', 'error');
     }
   };
 
   const handleEmployeeClick = async (employee) => {
     setSelectedEmployee(employee);
+    setAttendance(null);
     
-    // Fetch attendance for this employee
     try {
       const response = await fetch(`${backendUrl}/api/employees/${employee.emp_code}/attendance`);
       const data = await response.json();
@@ -146,7 +393,11 @@ function App() {
   };
 
   const getEmployeeImage = (employee) => {
-    // Professional blue gradient variations
+    if (employee.image_url) {
+      return employee.image_url;
+    }
+    
+    // Professional blue gradient variations for fallback
     const blueGradients = [
       'from-blue-500 to-blue-600',
       'from-blue-600 to-indigo-600', 
@@ -160,6 +411,37 @@ function App() {
     
     const colorIndex = employee.emp_code.charCodeAt(employee.emp_code.length - 1) % blueGradients.length;
     return blueGradients[colorIndex];
+  };
+
+  const handleImageUpload = (emp_code) => {
+    const employee = employees.find(emp => emp.emp_code === emp_code) || selectedEmployee;
+    if (employee) {
+      setSelectedEmployee(employee);
+      setShowImageUpload(true);
+    }
+  };
+
+  const handleImageUpdate = (newImageUrl, message = 'Image updated successfully!') => {
+    // Update employees list
+    setEmployees(prev => prev.map(emp => 
+      emp.emp_code === selectedEmployee.emp_code 
+        ? { ...emp, image_url: newImageUrl }
+        : emp
+    ));
+    
+    // Update filtered employees if applicable
+    setFilteredEmployees(prev => prev.map(emp => 
+      emp.emp_code === selectedEmployee.emp_code 
+        ? { ...emp, image_url: newImageUrl }
+        : emp
+    ));
+    
+    // Update selected employee
+    if (selectedEmployee) {
+      setSelectedEmployee(prev => ({ ...prev, image_url: newImageUrl }));
+    }
+    
+    showToast(message, 'success');
   };
 
   const searchFieldsConfig = [
@@ -177,69 +459,82 @@ function App() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center">
-        <div className="text-center bg-white rounded-2xl p-8 shadow-2xl border-2 border-blue-100">
-          <div className="loading-spinner w-16 h-16 mx-auto mb-4 border-4 border-blue-600"></div>
-          <p className="text-blue-800 text-xl font-semibold">Loading Employee Directory...</p>
+        <div className="text-center bg-white rounded-2xl p-8 shadow-2xl border-2 border-blue-100 glass-effect">
+          <div className="skeleton-image w-16 h-16 mx-auto mb-4 rounded-full"></div>
+          <p className="text-blue-800 text-xl font-semibold animate-pulse">Loading Employee Directory...</p>
+          <div className="mt-4 flex justify-center space-x-1">
+            <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{animationDelay: '0ms'}}></div>
+            <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{animationDelay: '150ms'}}></div>
+            <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{animationDelay: '300ms'}}></div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
-      {/* Header */}
-      <div className="bg-white shadow-lg border-b-4 border-blue-600 mb-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
+      {/* Toast Notifications */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={hideToast}
+        />
+      )}
+
+      {/* Enhanced Header */}
+      <div className="header-professional shadow-professional">
         <div className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-center space-x-4">
-            <div className="w-16 h-16 rounded-xl shadow-lg overflow-hidden bg-white border-2 border-blue-200">
+            <div className="company-logo w-16 h-16 rounded-xl shadow-lg overflow-hidden border-2 border-white">
               <img 
                 src="/smartworld-logo.png" 
                 alt="Smartworld Developers Logo" 
-                className="w-full h-full object-contain p-1"
+                className="w-full h-full object-contain p-1 bg-white"
                 onError={(e) => {
-                  console.log('Local logo failed, showing fallback...');
-                  // Fallback to text logo if image fails to load
                   e.target.style.display = 'none';
                   e.target.nextSibling.style.display = 'flex';
                 }}
-                onLoad={() => console.log('Smartworld logo loaded successfully!')}
               />
               <div className="w-full h-full bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-2xl" style={{display: 'none'}}>
                 SW
               </div>
             </div>
             <div className="text-center">
-              <h1 className="text-3xl font-bold text-blue-800 mb-1">
+              <h1 className="text-3xl font-bold text-professional-primary mb-1 animate-fade-in">
                 SMARTWORLD DEVELOPERS PVT. LTD.
               </h1>
-              <p className="text-blue-600 font-medium">Employee Directory</p>
+              <p className="text-professional-secondary">Employee Directory</p>
             </div>
           </div>
         </div>
       </div>
 
       <div className="container mx-auto px-6">
-        {/* Compact Search Section */}
-        <div className="bg-white rounded-xl shadow-lg p-4 mb-6 border border-blue-200">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
-            {searchFieldsConfig.map(({ key, label, placeholder }) => (
+        {/* Enhanced Search Section */}
+        <div className="glass-effect rounded-professional shadow-professional-lg p-6 mb-6 border-professional animate-slide-up">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+            {searchFieldsConfig.map(({ key, label, placeholder, icon }) => (
               <div key={key} className="relative">
-                <input
-                  type="text"
-                  value={searchFields[key]}
-                  onChange={(e) => handleSearchChange(key, e.target.value)}
-                  placeholder={placeholder}
-                  className="w-full px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm font-medium"
-                />
+                <div className="relative">
+                  <span className="absolute left-3 top-3 text-lg">{icon}</span>
+                  <input
+                    type="text"
+                    value={searchFields[key]}
+                    onChange={(e) => handleSearchChange(key, e.target.value)}
+                    placeholder={placeholder}
+                    className="search-input pl-12"
+                  />
+                </div>
                 
-                {/* Compact Suggestions Dropdown */}
                 {showSuggestions[key] && suggestions[key]?.length > 0 && (
-                  <div className="absolute z-20 w-full mt-1 bg-white border border-blue-200 rounded-lg shadow-xl max-h-40 overflow-y-auto">
+                  <div className="suggestions-dropdown animate-slide-down">
                     {suggestions[key].map((suggestion, idx) => (
                       <div
                         key={idx}
                         onClick={() => selectSuggestion(key, suggestion)}
-                        className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 border-b border-gray-100 last:border-b-0"
+                        className="suggestion-item"
                       >
                         {suggestion}
                       </div>
@@ -251,94 +546,145 @@ function App() {
           </div>
 
           <div className="flex justify-between items-center">
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <button
                 onClick={clearAllFilters}
-                className="px-4 py-2 bg-gray-500 text-white text-sm rounded-lg hover:bg-gray-600 transition duration-200"
+                className="btn-secondary ripple"
               >
                 Clear Filters
               </button>
               
               <button
                 onClick={viewAllEmployees}
-                className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition duration-200"
+                className="btn-primary ripple"
               >
-                View All
+                View All Employees
               </button>
             </div>
             
-            <div className="flex items-center space-x-2">
-              <span className="text-gray-700 text-sm font-medium">View:</span>
-              <div className="flex bg-gray-200 rounded-lg">
+            <div className="flex items-center space-x-3">
+              <span className="text-professional-muted font-medium">View:</span>
+              <div className="flex bg-gray-200 rounded-lg overflow-hidden">
                 <button
                   onClick={() => setViewMode('card')}
-                  className={`px-3 py-1 rounded-l-lg text-sm font-medium transition duration-200 ${
-                    viewMode === 'card' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-300'
+                  className={`px-4 py-2 font-medium transition-all duration-200 ${
+                    viewMode === 'card' 
+                      ? 'bg-blue-600 text-white shadow-lg' 
+                      : 'text-gray-700 hover:bg-gray-300'
                   }`}
                 >
-                  Cards
+                  🎴 Cards
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`px-3 py-1 rounded-r-lg text-sm font-medium transition duration-200 ${
-                    viewMode === 'list' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-300'
+                  className={`px-4 py-2 font-medium transition-all duration-200 ${
+                    viewMode === 'list' 
+                      ? 'bg-blue-600 text-white shadow-lg' 
+                      : 'text-gray-700 hover:bg-gray-300'
                   }`}
                 >
-                  List
+                  📋 List
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Results Section */}
-        <div className="bg-white rounded-xl shadow-lg p-6 border border-blue-200">
+        {/* Enhanced Results Section */}
+        <div className="glass-effect rounded-professional shadow-professional-lg p-6 border-professional">
           {!hasActiveFilters && !showAllEmployees ? (
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4 text-blue-400">🔍</div>
-              <h3 className="text-blue-800 text-xl font-bold mb-2">Search Employees</h3>
-              <p className="text-blue-600 mb-6">Use the filters above to search for employees</p>
+            <div className="text-center py-16 animate-fade-in">
+              <div className="text-8xl mb-6 text-blue-400 animate-bounce">🔍</div>
+              <h3 className="text-professional-primary text-2xl font-bold mb-3">Discover Our Team</h3>
+              <p className="text-professional-secondary mb-8 text-lg">Use the advanced filters above to find employees</p>
               <button
                 onClick={viewAllEmployees}
-                className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition duration-200"
+                className="btn-primary text-lg px-8 py-4 ripple"
               >
-                View All Employees
+                🚀 View All Employees
               </button>
             </div>
           ) : displayedEmployees.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4 text-gray-400">😔</div>
-              <p className="text-gray-600 text-lg">No employees found matching your criteria</p>
+            <div className="text-center py-16 animate-fade-in">
+              <div className="text-8xl mb-6 text-gray-400">😔</div>
+              <h3 className="text-gray-600 text-xl font-bold mb-3">No Employees Found</h3>
+              <p className="text-gray-500 mb-6">Try adjusting your search criteria</p>
+              <button
+                onClick={clearAllFilters}
+                className="btn-primary ripple"
+              >
+                Clear All Filters
+              </button>
             </div>
           ) : (
             <>
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-blue-800">
-                  Employees ({displayedEmployees.length})
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-2xl font-bold text-professional-primary animate-fade-in">
+                  Our Team ({displayedEmployees.length} {displayedEmployees.length === 1 ? 'Employee' : 'Employees'})
                 </h2>
               </div>
 
               {viewMode === 'card' ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                   {displayedEmployees.map((employee, index) => (
                     <div
                       key={employee.emp_code}
                       onClick={() => handleEmployeeClick(employee)}
-                      className="bg-gradient-to-br from-white to-blue-50 rounded-lg shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer border border-blue-200 hover:border-blue-400 p-4 card-hover"
-                      style={{ animationDelay: `${index * 0.05}s` }}
+                      className="employee-card animate-slide-up"
+                      style={{ animationDelay: `${index * 0.1}s` }}
                     >
-                      {/* Simplified Employee Card - Only Image, Name, Designation */}
-                      <div className="text-center">
-                        <div className={`w-16 h-16 bg-gradient-to-br ${getEmployeeImage(employee)} rounded-full flex items-center justify-center text-white font-bold text-xl mx-auto mb-3 shadow-lg border-2 border-white`}>
-                          {employee.emp_name.charAt(0)}
-                        </div>
-                        <h3 className="font-bold text-gray-800 text-sm mb-1">{employee.emp_name}</h3>
-                        <p className="text-blue-600 font-medium text-xs mb-2">{employee.designation}</p>
-                        <p className="text-gray-500 text-xs">#{employee.emp_code}</p>
-                      </div>
-                      
-                      <div className="mt-3 text-center">
-                        <div className="bg-blue-600 text-white px-2 py-1 rounded-full text-xs">
+                      <div className="text-center relative">
+                        {employee.image_url ? (
+                          <div className="relative inline-block">
+                            <img
+                              src={employee.image_url}
+                              alt={employee.emp_name}
+                              className="w-20 h-20 rounded-full mx-auto mb-4 object-cover shadow-lg border-4 border-white"
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                                e.target.nextSibling.style.display = 'flex';
+                              }}
+                            />
+                            <div
+                              className={`w-20 h-20 bg-gradient-to-br ${getEmployeeImage(employee)} rounded-full flex items-center justify-center text-white font-bold text-2xl mx-auto mb-4 shadow-lg border-4 border-white`}
+                              style={{display: 'none'}}
+                            >
+                              {employee.emp_name.charAt(0)}
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleImageUpload(employee.emp_code);
+                              }}
+                              className="absolute -top-1 -right-1 w-6 h-6 bg-blue-500 text-white rounded-full text-xs hover:bg-blue-600 transition-colors"
+                              title="Upload/Change Image"
+                            >
+                              📸
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="relative inline-block">
+                            <div className={`w-20 h-20 bg-gradient-to-br ${getEmployeeImage(employee)} rounded-full flex items-center justify-center text-white font-bold text-2xl mx-auto mb-4 shadow-lg border-4 border-white`}>
+                              {employee.emp_name.charAt(0)}
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleImageUpload(employee.emp_code);
+                              }}
+                              className="absolute -top-1 -right-1 w-6 h-6 bg-blue-500 text-white rounded-full text-xs hover:bg-blue-600 transition-colors"
+                              title="Upload Image"
+                            >
+                              📸
+                            </button>
+                          </div>
+                        )}
+                        
+                        <h3 className="font-bold text-gray-800 text-base mb-2">{employee.emp_name}</h3>
+                        <p className="text-professional-secondary font-medium text-sm mb-2">{employee.designation}</p>
+                        <p className="text-professional-muted text-xs mb-3">#{employee.emp_code}</p>
+                        
+                        <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-full text-xs font-medium shadow-lg">
                           Click for Details
                         </div>
                       </div>
@@ -346,15 +692,16 @@ function App() {
                   ))}
                 </div>
               ) : (
-                <div className="bg-white rounded-lg overflow-hidden shadow-lg border border-blue-200">
+                <div className="table-container">
                   <div className="overflow-x-auto">
                     <table className="min-w-full">
-                      <thead className="bg-blue-600 text-white">
+                      <thead>
                         <tr>
-                          <th className="px-4 py-3 text-left text-sm font-bold">Employee</th>
-                          <th className="px-4 py-3 text-left text-sm font-bold">Designation</th>
-                          <th className="px-4 py-3 text-left text-sm font-bold">Department</th>
-                          <th className="px-4 py-3 text-left text-sm font-bold">Location</th>
+                          <th className="table-header">Employee</th>
+                          <th className="table-header">Designation</th>
+                          <th className="table-header">Department</th>
+                          <th className="table-header">Location</th>
+                          <th className="table-header">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-blue-100">
@@ -362,26 +709,50 @@ function App() {
                           <tr
                             key={employee.emp_code}
                             onClick={() => handleEmployeeClick(employee)}
-                            className="hover:bg-blue-50 cursor-pointer transition-colors duration-200"
+                            className="hover:bg-blue-50 cursor-pointer transition-all duration-200 animate-slide-up"
+                            style={{ animationDelay: `${index * 0.05}s` }}
                           >
-                            <td className="px-4 py-3 whitespace-nowrap">
+                            <td className="table-cell">
                               <div className="flex items-center">
-                                <div className={`w-10 h-10 bg-gradient-to-br ${getEmployeeImage(employee)} rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md`}>
+                                {employee.image_url ? (
+                                  <img
+                                    src={employee.image_url}
+                                    alt={employee.emp_name}
+                                    className="w-12 h-12 rounded-full object-cover shadow-md border-2 border-white"
+                                    onError={(e) => {
+                                      e.target.style.display = 'none';
+                                      e.target.nextSibling.style.display = 'flex';
+                                    }}
+                                  />
+                                ) : null}
+                                <div className={`w-12 h-12 bg-gradient-to-br ${getEmployeeImage(employee)} rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md ${employee.image_url ? 'hidden' : ''}`}>
                                   {employee.emp_name.charAt(0)}
                                 </div>
-                                <div className="ml-3">
+                                <div className="ml-4">
                                   <div className="text-sm font-bold text-gray-900">{employee.emp_name}</div>
-                                  <div className="text-xs text-gray-500">#{employee.emp_code}</div>
+                                  <div className="text-xs text-professional-muted">#{employee.emp_code}</div>
                                 </div>
                               </div>
                             </td>
-                            <td className="px-4 py-3 whitespace-nowrap">
-                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
+                            <td className="table-cell">
+                              <span className="status-badge bg-blue-100 text-blue-800">
                                 {employee.designation}
                               </span>
                             </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{employee.department}</td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{employee.location}</td>
+                            <td className="table-cell text-gray-900">{employee.department}</td>
+                            <td className="table-cell text-gray-900">{employee.location}</td>
+                            <td className="table-cell">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleImageUpload(employee.emp_code);
+                                }}
+                                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                title="Upload/Change Image"
+                              >
+                                📸 Image
+                              </button>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -395,13 +766,13 @@ function App() {
 
         {/* Enhanced Employee Modal */}
         {selectedEmployee && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl shadow-2xl p-8 m-4 max-w-4xl w-full max-h-[90vh] overflow-y-auto border-4 border-blue-200">
+          <div className="fixed inset-0 modal-backdrop flex items-center justify-center z-50">
+            <div className="glass-effect-dark rounded-2xl shadow-2xl p-8 m-4 max-w-5xl w-full max-h-[90vh] overflow-y-auto border-2 border-white border-opacity-20 modal-enter">
               <div className="flex justify-between items-center mb-8">
-                <h2 className="text-3xl font-bold text-blue-800">Employee Profile</h2>
+                <h2 className="text-3xl font-bold text-white">Employee Profile</h2>
                 <button
                   onClick={() => setSelectedEmployee(null)}
-                  className="text-gray-500 hover:text-gray-700 text-2xl font-bold transition-all duration-200"
+                  className="text-white hover:text-gray-300 text-3xl font-bold transition-all duration-200 hover:rotate-90"
                 >
                   ✕
                 </button>
@@ -409,13 +780,33 @@ function App() {
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Employee Info */}
-                <div className="bg-blue-50 rounded-2xl p-6 border border-blue-200">
+                <div className="glass-effect rounded-2xl p-6 border border-white border-opacity-20">
                   <div className="text-center mb-6">
-                    <div className={`w-24 h-24 bg-gradient-to-br ${getEmployeeImage(selectedEmployee)} rounded-full flex items-center justify-center text-white font-bold text-3xl mx-auto mb-4 shadow-xl border-4 border-white`}>
-                      {selectedEmployee.emp_name.charAt(0)}
+                    <div className="relative inline-block">
+                      {selectedEmployee.image_url ? (
+                        <img
+                          src={selectedEmployee.image_url}
+                          alt={selectedEmployee.emp_name}
+                          className="w-32 h-32 rounded-full mx-auto mb-4 object-cover shadow-xl border-4 border-white"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <div className={`w-32 h-32 bg-gradient-to-br ${getEmployeeImage(selectedEmployee)} rounded-full flex items-center justify-center text-white font-bold text-4xl mx-auto mb-4 shadow-xl border-4 border-white ${selectedEmployee.image_url ? 'hidden' : ''}`}>
+                        {selectedEmployee.emp_name.charAt(0)}
+                      </div>
+                      <button
+                        onClick={() => handleImageUpload(selectedEmployee.emp_code)}
+                        className="absolute -bottom-2 -right-2 w-10 h-10 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors shadow-lg"
+                        title="Upload/Change Image"
+                      >
+                        📸
+                      </button>
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-800 mb-1">{selectedEmployee.emp_name}</h3>
-                    <p className="text-blue-600 font-bold">#{selectedEmployee.emp_code}</p>
+                    <h3 className="text-3xl font-bold text-gray-800 mb-2">{selectedEmployee.emp_name}</h3>
+                    <p className="text-professional-secondary font-bold text-lg">#{selectedEmployee.emp_code}</p>
                   </div>
 
                   <div className="space-y-4">
@@ -425,25 +816,25 @@ function App() {
                       { label: 'Location', value: selectedEmployee.location, icon: '📍' },
                       { label: 'Mobile', value: selectedEmployee.mobile, icon: '📱' }
                     ].map((field, idx) => (
-                      <div key={idx} className="bg-white p-4 rounded-xl border border-blue-200">
+                      <div key={idx} className="bg-white bg-opacity-90 p-4 rounded-xl border border-blue-200 hover:shadow-lg transition-shadow">
                         <div className="flex items-center justify-between">
                           <span className="flex items-center text-gray-700 font-medium">
-                            <span className="text-xl mr-3">{field.icon}</span>
+                            <span className="text-2xl mr-3">{field.icon}</span>
                             {field.label}
                           </span>
-                          <span className="font-bold text-blue-800">{field.value}</span>
+                          <span className="font-bold text-professional-primary">{field.value}</span>
                         </div>
                       </div>
                     ))}
                     
                     {selectedEmployee.reporting_manager && (
-                      <div className="bg-white p-4 rounded-xl border border-blue-200">
+                      <div className="bg-white bg-opacity-90 p-4 rounded-xl border border-blue-200 hover:shadow-lg transition-shadow">
                         <div className="flex items-center justify-between">
                           <span className="flex items-center text-gray-700 font-medium">
-                            <span className="text-xl mr-3">👨‍💼</span>
+                            <span className="text-2xl mr-3">👨‍💼</span>
                             Reporting Manager
                           </span>
-                          <span className="font-bold text-blue-800">{selectedEmployee.reporting_manager}</span>
+                          <span className="font-bold text-professional-primary">{selectedEmployee.reporting_manager}</span>
                         </div>
                       </div>
                     )}
@@ -451,22 +842,22 @@ function App() {
                 </div>
 
                 {/* Today's Attendance */}
-                <div className="bg-blue-50 rounded-2xl p-6 border border-blue-200">
-                  <h4 className="text-xl font-bold text-gray-800 mb-6 text-center">Today's Attendance</h4>
+                <div className="glass-effect rounded-2xl p-6 border border-white border-opacity-20">
+                  <h4 className="text-2xl font-bold text-gray-800 mb-6 text-center">Today's Attendance</h4>
                   
                   {attendance ? (
                     <div className="space-y-4">
                       <div className="text-center mb-6">
-                        <div className={`inline-flex items-center px-4 py-2 rounded-full text-lg font-bold ${
-                          attendance.status === 'Present' ? 'bg-green-500 text-white' :
-                          attendance.status === 'Late' ? 'bg-yellow-500 text-white' :
-                          attendance.status === 'Half Day' ? 'bg-blue-500 text-white' :
-                          'bg-red-500 text-white'
+                        <div className={`inline-flex items-center px-6 py-3 rounded-full text-lg font-bold shadow-lg ${
+                          attendance.status === 'Present' ? 'status-present' :
+                          attendance.status === 'Late' ? 'status-late' :
+                          attendance.status === 'Half Day' ? 'status-half-day' :
+                          'status-absent'
                         }`}>
                           {attendance.status === 'Present' ? '✅' :
                            attendance.status === 'Late' ? '⏰' :
                            attendance.status === 'Half Day' ? '🕐' : '❌'}
-                          <span className="ml-2">{attendance.status}</span>
+                          <span className="ml-3">{attendance.status}</span>
                         </div>
                       </div>
                       
@@ -476,20 +867,20 @@ function App() {
                         { label: 'Hours Worked', value: `${attendance.hours_worked} hrs`, icon: '⏱️' },
                         { label: 'Date', value: attendance.date, icon: '📅' }
                       ].filter(item => item.value && item.value !== '').map((item, idx) => (
-                        <div key={idx} className="bg-white p-4 rounded-xl border border-blue-200">
+                        <div key={idx} className="bg-white bg-opacity-90 p-4 rounded-xl border border-blue-200 hover:shadow-lg transition-shadow">
                           <div className="flex items-center justify-between">
                             <span className="flex items-center text-gray-700 font-medium">
-                              <span className="text-xl mr-3">{item.icon}</span>
+                              <span className="text-2xl mr-3">{item.icon}</span>
                               {item.label}
                             </span>
-                            <span className="font-bold text-blue-800">{item.value}</span>
+                            <span className="font-bold text-professional-primary">{item.value}</span>
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : (
                     <div className="text-center py-8">
-                      <div className="loading-spinner w-8 h-8 mx-auto mb-4 border-4 border-blue-600"></div>
+                      <div className="skeleton-image w-16 h-16 mx-auto mb-4 rounded-full"></div>
                       <p className="text-gray-600">Loading attendance...</p>
                     </div>
                   )}
@@ -498,7 +889,26 @@ function App() {
             </div>
           </div>
         )}
+
+        {/* Image Upload Modal */}
+        {showImageUpload && selectedEmployee && (
+          <ImageUpload
+            employeeCode={selectedEmployee.emp_code}
+            currentImage={selectedEmployee.image_url}
+            onImageUpdate={handleImageUpdate}
+            onClose={() => setShowImageUpload(false)}
+          />
+        )}
       </div>
+
+      {/* Floating Action Button */}
+      <button
+        onClick={viewAllEmployees}
+        className="fab"
+        title="View All Employees"
+      >
+        👥
+      </button>
     </div>
   );
 }
