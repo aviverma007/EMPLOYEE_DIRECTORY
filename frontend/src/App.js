@@ -588,28 +588,12 @@ function App() {
 
       {/* Enhanced Header */}
       <div className="header-professional shadow-professional dark:bg-gray-800 dark:border-gray-600">
-        <div className="container mx-auto px-6 py-6">
-          <div className="flex items-center justify-center space-x-4">
-            <div className="company-logo w-16 h-16 rounded-xl shadow-lg overflow-hidden border-2 border-white dark:border-gray-600">
-              <img 
-                src="/smartworld-logo.png" 
-                alt="Smartworld Developers Logo" 
-                className="w-full h-full object-contain p-1 bg-white"
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.nextSibling.style.display = 'flex';
-                }}
-              />
-              <div className="w-full h-full bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-2xl" style={{display: 'none'}}>
-                SW
-              </div>
-            </div>
-            <div className="text-center">
-              <h1 className="text-3xl font-bold text-professional-primary dark:text-white mb-1 animate-fade-in">
-                SMARTWORLD DEVELOPERS PVT. LTD.
-              </h1>
-              <p className="text-professional-secondary dark:text-gray-300">Employee Directory</p>
-            </div>
+        <div className="container mx-auto px-6 py-4">
+          <div className="text-center">
+            <h1 className="text-5xl font-bold text-professional-primary dark:text-white mb-2 animate-fade-in">
+              SMARTWORLD DEVELOPERS PVT. LTD.
+            </h1>
+            <p className="text-2xl font-semibold text-professional-secondary dark:text-gray-300">Employee Directory</p>
           </div>
         </div>
       </div>
