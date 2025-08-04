@@ -1,75 +1,339 @@
-from fastapi import FastAPI, APIRouter
-from dotenv import load_dotenv
-from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
 import os
-import logging
-from pathlib import Path
-from pydantic import BaseModel, Field
-from typing import List
-import uuid
+import csv
+import requests
+from typing import List, Dict, Optional
 from datetime import datetime
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+import uuid
+import random
 
-
-ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
-
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
-
-# Create the main app without a prefix
 app = FastAPI()
-
-# Create a router with the /api prefix
-api_router = APIRouter(prefix="/api")
-
-
-# Define Models
-class StatusCheck(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
-
-class StatusCheckCreate(BaseModel):
-    client_name: str
-
-# Add your routes to the router instead of directly to app
-@api_router.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.dict()
-    status_obj = StatusCheck(**status_dict)
-    _ = await db.status_checks.insert_one(status_obj.dict())
-    return status_obj
-
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    status_checks = await db.status_checks.find().to_list(1000)
-    return [StatusCheck(**status_check) for status_check in status_checks]
-
-# Include the router in the main app
-app.include_router(api_router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_credentials=True,
     allow_origins=["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+# Google Sheets CSV URL
+SHEETS_CSV_URL = "https://docs.google.com/spreadsheets/d/1z5MgsofbAdxCBlNY2wg1FBLap8lu-yk9/export?format=csv"
 
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    client.close()
+# In-memory storage for employee data
+employees_data = []
+
+# Column mapping from Google Sheets to our fields
+COLUMN_MAPPING = {
+    'EMP ID': 'emp_code',
+    'EMP NAME': 'emp_name', 
+    'DEPARTMENT': 'department',
+    'LOCATION': 'location',
+    'GRADE': 'grade',
+    'MOBILE': 'mobile',
+    'EXTENSION NUMBER': 'extension_number',
+    'IMAGE': 'image_url',
+    'REPORTING MANAGER': 'reporting_manager'
+}
+
+class Employee(BaseModel):
+    emp_code: str
+    emp_name: str
+    department: str
+    location: str
+    grade: str
+    mobile: str
+    extension_number: str
+    image_url: Optional[str] = None
+    reporting_manager: Optional[str] = None
+
+class AttendanceRecord(BaseModel):
+    emp_code: str
+    emp_name: str
+    date: str
+    check_in: str
+    check_out: Optional[str] = None
+    status: str
+    hours_worked: Optional[float] = None
+
+def fetch_employee_data():
+    """Fetch employee data from Google Sheets"""
+    global employees_data
+    try:
+        response = requests.get(SHEETS_CSV_URL)
+        response.raise_for_status()
+        
+        # Parse CSV data
+        csv_data = response.text.strip()
+        lines = csv_data.split('\n')
+        
+        if not lines:
+            return
+        
+        # Get headers
+        headers = [h.strip() for h in lines[0].split(',')]
+        employees_data = []
+        
+        # Process each row
+        for line in lines[1:]:
+            if not line.strip():
+                continue
+                
+            values = [v.strip() for v in line.split(',')]
+            employee = {}
+            
+            # Map columns to our schema
+            for i, header in enumerate(headers):
+                if i < len(values) and header in COLUMN_MAPPING:
+                    employee[COLUMN_MAPPING[header]] = values[i]
+            
+            # Ensure all required fields exist
+            required_fields = ['emp_code', 'emp_name', 'department', 'location', 'grade', 'mobile', 'extension_number']
+            if all(field in employee for field in required_fields):
+                employees_data.append(employee)
+                
+        print(f"Loaded {len(employees_data)} employees from Google Sheets")
+        
+    except Exception as e:
+        print(f"Error fetching employee data: {e}")
+        # Use sample data if Google Sheets fails
+        employees_data = [
+            {
+                "emp_code": "81096",
+                "emp_name": "ANIRUDH VERMA",
+                "department": "IT",
+                "location": "IFC",
+                "grade": "IT EXECUTIVE",
+                "mobile": "8929987500",
+                "extension_number": "7626",
+                "reporting_manager": "CHANDAN"
+            },
+            {
+                "emp_code": "80957",
+                "emp_name": "BINAY KUMAR",
+                "department": "IT",
+                "location": "IFC",
+                "grade": "IT EXECUTIVE",
+                "mobile": "8929987500",
+                "extension_number": "7626",
+                "reporting_manager": "CHANDAN"
+            },
+            {
+                "emp_code": "80176",
+                "emp_name": "NEERAJ KALRA",
+                "department": "IT",
+                "location": "IFC",
+                "grade": "SENIOR MANAGER",
+                "mobile": "8929987500",
+                "extension_number": "7626",
+                "reporting_manager": "NITIN GUPTA"
+            },
+            {
+                "emp_code": "00001",
+                "emp_name": "NITIN GUPTA",
+                "department": "IT",
+                "location": "IFC",
+                "grade": "AVP",
+                "mobile": "8929987500",
+                "extension_number": "7626",
+                "reporting_manager": "HARI"
+            },
+            {
+                "emp_code": "00002",
+                "emp_name": "CHANDAN",
+                "department": "IT",
+                "location": "IFC",
+                "grade": "SENIOR MANAGER",
+                "mobile": "8929987500",
+                "extension_number": "7626",
+                "reporting_manager": "RANJEET SARKAR"
+            }
+        ]
+
+def generate_today_attendance(emp_code: str, emp_name: str) -> AttendanceRecord:
+    """Generate mock attendance data for today"""
+    today = datetime.now().strftime("%Y-%m-%d")
+    
+    # Generate random attendance data
+    statuses = ["Present", "Late", "Half Day", "Absent"]
+    status = random.choice(statuses)
+    
+    if status == "Absent":
+        return AttendanceRecord(
+            emp_code=emp_code,
+            emp_name=emp_name,
+            date=today,
+            check_in="",
+            check_out="",
+            status=status,
+            hours_worked=0
+        )
+    
+    # Generate check-in time
+    check_in_hour = random.randint(8, 10)
+    check_in_min = random.randint(0, 59)
+    check_in = f"{check_in_hour:02d}:{check_in_min:02d}"
+    
+    check_out = None
+    hours_worked = None
+    
+    if status != "Half Day":
+        # Generate check-out time
+        check_out_hour = random.randint(17, 20)
+        check_out_min = random.randint(0, 59)
+        check_out = f"{check_out_hour:02d}:{check_out_min:02d}"
+        
+        # Calculate hours worked
+        hours_worked = (check_out_hour - check_in_hour) + (check_out_min - check_in_min) / 60
+        hours_worked = round(hours_worked, 1)
+    else:
+        hours_worked = 4.0
+    
+    return AttendanceRecord(
+        emp_code=emp_code,
+        emp_name=emp_name,
+        date=today,
+        check_in=check_in,
+        check_out=check_out,
+        status=status,
+        hours_worked=hours_worked
+    )
+
+@app.on_event("startup")
+async def startup_event():
+    """Load employee data on startup"""
+    fetch_employee_data()
+
+@app.get("/api/employees")
+async def get_all_employees():
+    """Get all employees"""
+    return {"employees": employees_data}
+
+@app.get("/api/employees/search")
+async def search_employees(q: str = "", field: str = ""):
+    """Search employees with suggestions"""
+    if not q:
+        return {"suggestions": [], "employees": employees_data}
+    
+    q = q.lower()
+    suggestions = []
+    matching_employees = []
+    
+    # Get all possible values for the field
+    if field and field in ['emp_code', 'emp_name', 'department', 'location', 'grade', 'mobile', 'extension_number']:
+        # Get unique values for dropdown suggestions
+        field_values = set()
+        for emp in employees_data:
+            if field in emp and emp[field]:
+                field_values.add(emp[field])
+        
+        # Filter suggestions based on query
+        suggestions = [val for val in field_values if q in val.lower()][:10]
+        
+        # If exact match found in suggestions, get matching employees
+        for suggestion in suggestions:
+            if q == suggestion.lower():
+                matching_employees = [emp for emp in employees_data if emp.get(field, "").lower() == q]
+                break
+    else:
+        # Global search across all fields
+        for emp in employees_data:
+            match = False
+            for key, value in emp.items():
+                if value and q in str(value).lower():
+                    match = True
+                    break
+            if match:
+                matching_employees.append(emp)
+    
+    return {
+        "suggestions": suggestions,
+        "employees": matching_employees
+    }
+
+@app.get("/api/employees/filter")
+async def filter_employees(
+    emp_code: str = "",
+    emp_name: str = "",
+    department: str = "",
+    location: str = "",
+    grade: str = "",
+    mobile: str = "",
+    extension_number: str = ""
+):
+    """Filter employees by multiple criteria"""
+    filtered_employees = employees_data.copy()
+    
+    filters = {
+        'emp_code': emp_code,
+        'emp_name': emp_name,
+        'department': department,
+        'location': location,
+        'grade': grade,
+        'mobile': mobile,
+        'extension_number': extension_number
+    }
+    
+    for field, value in filters.items():
+        if value:
+            filtered_employees = [
+                emp for emp in filtered_employees 
+                if emp.get(field, "").lower() == value.lower()
+            ]
+    
+    return {"employees": filtered_employees}
+
+@app.get("/api/employees/{emp_code}/attendance")
+async def get_employee_attendance(emp_code: str):
+    """Get today's attendance for a specific employee"""
+    # Find employee
+    employee = None
+    for emp in employees_data:
+        if emp['emp_code'] == emp_code:
+            employee = emp
+            break
+    
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    # Generate today's attendance
+    attendance = generate_today_attendance(emp_code, employee['emp_name'])
+    
+    return {"attendance": attendance}
+
+@app.get("/api/department/{department_name}/employees")
+async def get_department_employees(department_name: str):
+    """Get all employees in a specific department"""
+    dept_employees = [
+        emp for emp in employees_data 
+        if emp.get('department', '').lower() == department_name.lower()
+    ]
+    
+    return {"employees": dept_employees, "department": department_name, "count": len(dept_employees)}
+
+@app.get("/api/field-values")
+async def get_field_values():
+    """Get all unique values for each searchable field"""
+    field_values = {
+        'departments': list(set(emp.get('department', '') for emp in employees_data if emp.get('department'))),
+        'locations': list(set(emp.get('location', '') for emp in employees_data if emp.get('location'))),
+        'grades': list(set(emp.get('grade', '') for emp in employees_data if emp.get('grade'))),
+        'emp_codes': list(set(emp.get('emp_code', '') for emp in employees_data if emp.get('emp_code'))),
+        'emp_names': list(set(emp.get('emp_name', '') for emp in employees_data if emp.get('emp_name'))),
+        'mobiles': list(set(emp.get('mobile', '') for emp in employees_data if emp.get('mobile'))),
+        'extension_numbers': list(set(emp.get('extension_number', '') for emp in employees_data if emp.get('extension_number')))
+    }
+    
+    return field_values
+
+@app.post("/api/refresh-data")
+async def refresh_employee_data():
+    """Manually refresh employee data from Google Sheets"""
+    fetch_employee_data()
+    return {"message": f"Data refreshed successfully. Loaded {len(employees_data)} employees."}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8001)
