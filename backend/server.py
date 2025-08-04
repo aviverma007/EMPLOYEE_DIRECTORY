@@ -412,9 +412,10 @@ async def filter_employees(
     location: str = "",
     designation: str = "",  # Changed from grade to designation
     mobile: str = "",
+    extension_number: str = "",
     email: str = ""
 ):
-    """Filter employees by multiple criteria (changed grade to designation)"""
+    """Filter employees by multiple criteria (changed grade to designation, added extension_number)"""
     filtered_employees = employees_data.copy()
     
     filters = {
@@ -424,6 +425,7 @@ async def filter_employees(
         'location': location,
         'designation': designation,  # Changed from grade
         'mobile': mobile,
+        'extension_number': extension_number,
         'email': email
     }
     
