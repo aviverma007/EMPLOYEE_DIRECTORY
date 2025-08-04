@@ -790,11 +790,19 @@ function App() {
                           </div>
                         )}
                         
-                        <h3 className="font-bold text-gray-800 text-base mb-2">{employee.emp_name}</h3>
-                        <p className="text-professional-secondary font-medium text-sm mb-2">{employee.designation}</p>
-                        <p className="text-professional-muted text-xs mb-3">#{employee.emp_code}</p>
+                        <h3 className="font-bold text-gray-800 text-sm mb-1">{employee.emp_name}</h3>
+                        <p className="text-professional-secondary font-medium text-xs mb-1">{employee.designation}</p>
+                        <p className="text-professional-muted text-xs mb-1">#{employee.emp_code}</p>
                         
-                        <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-full text-xs font-medium shadow-lg">
+                        {/* Additional Info */}
+                        <div className="space-y-1 mb-3">
+                          <p className="text-gray-600 text-xs">🏢 {employee.department}</p>
+                          <p className="text-gray-600 text-xs">📍 {employee.location}</p>
+                          {employee.email && <p className="text-gray-600 text-xs">📧 {employee.email}</p>}
+                          {employee.joining_date && <p className="text-gray-600 text-xs">📅 {employee.joining_date}</p>}
+                        </div>
+                        
+                        <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg">
                           Click for Details
                         </div>
                       </div>
