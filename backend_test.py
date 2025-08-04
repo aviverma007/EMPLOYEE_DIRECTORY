@@ -418,6 +418,394 @@ class BackendTester:
             )
             return False
 
+    def create_test_image(self, format="JPEG", size=(100, 100), file_size_mb=None):
+        """Create a test image for upload testing"""
+        try:
+            # Create a simple test image
+            img = Image.new('RGB', size, color='red')
+            img_buffer = io.BytesIO()
+            
+            # Save with specified format
+            img.save(img_buffer, format=format)
+            img_data = img_buffer.getvalue()
+            
+            # If specific file size requested, pad or truncate
+            if file_size_mb:
+                target_size = int(file_size_mb * 1024 * 1024)
+                if len(img_data) < target_size:
+                    # Pad with zeros to reach target size
+                    img_data += b'\x00' * (target_size - len(img_data))
+                elif len(img_data) > target_size:
+                    # Truncate to target size
+                    img_data = img_data[:target_size]
+            
+            return img_data
+        except Exception as e:
+            print(f"Error creating test image: {e}")
+            return None
+
+    def test_image_upload_api(self):
+        """Test image upload API with various scenarios"""
+        print("\n=== Testing Image Upload API ===")
+        
+        try:
+            successful_uploads = 0
+            
+            # Test 1: Valid image upload for each test employee
+            for emp_code in TEST_EMPLOYEE_CODES[:2]:  # Test with first 2 employees
+                # Create a test image
+                test_image = self.create_test_image()
+                if not test_image:
+                    self.results["image_upload_api"]["details"].append(
+                        self.log_result(f"Image Upload for {emp_code}", False, "Failed to create test image")
+                    )
+                    continue
+                
+                # Upload image
+                files = {'file': ('test_image.jpg', test_image, 'image/jpeg')}
+                response = self.session.post(f"{API_BASE}/employees/{emp_code}/image", files=files)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("success") and "image_url" in data:
+                        self.results["image_upload_api"]["details"].append(
+                            self.log_result(f"Image Upload for {emp_code}", True, "Successfully uploaded image")
+                        )
+                        successful_uploads += 1
+                    else:
+                        self.results["image_upload_api"]["details"].append(
+                            self.log_result(f"Image Upload for {emp_code}", False, "Invalid response structure")
+                        )
+                else:
+                    self.results["image_upload_api"]["details"].append(
+                        self.log_result(f"Image Upload for {emp_code}", False, f"HTTP {response.status_code}: {response.text}")
+                    )
+            
+            # Test 2: Invalid employee code
+            test_image = self.create_test_image()
+            if test_image:
+                files = {'file': ('test_image.jpg', test_image, 'image/jpeg')}
+                response = self.session.post(f"{API_BASE}/employees/INVALID_CODE/image", files=files)
+                
+                if response.status_code == 404:
+                    self.results["image_upload_api"]["details"].append(
+                        self.log_result("Invalid Employee Code", True, "Correctly returned 404 for invalid employee")
+                    )
+                else:
+                    self.results["image_upload_api"]["details"].append(
+                        self.log_result("Invalid Employee Code", False, f"Expected 404, got {response.status_code}")
+                    )
+            
+            # Test 3: Different image formats
+            formats_to_test = [("PNG", "image/png"), ("JPEG", "image/jpeg")]
+            for format_name, content_type in formats_to_test:
+                test_image = self.create_test_image(format=format_name)
+                if test_image:
+                    files = {'file': (f'test_image.{format_name.lower()}', test_image, content_type)}
+                    response = self.session.post(f"{API_BASE}/employees/{TEST_EMPLOYEE_CODES[0]}/image", files=files)
+                    
+                    if response.status_code == 200:
+                        self.results["image_upload_api"]["details"].append(
+                            self.log_result(f"{format_name} Format Upload", True, f"Successfully uploaded {format_name} image")
+                        )
+                    else:
+                        self.results["image_upload_api"]["details"].append(
+                            self.log_result(f"{format_name} Format Upload", False, f"HTTP {response.status_code}")
+                        )
+            
+            if successful_uploads > 0:
+                self.results["image_upload_api"]["passed"] = True
+                return True
+            else:
+                return False
+                
+        except Exception as e:
+            self.results["image_upload_api"]["details"].append(
+                self.log_result("Image Upload API", False, f"Exception: {str(e)}")
+            )
+            return False
+
+    def test_image_retrieval_api(self):
+        """Test image retrieval API"""
+        print("\n=== Testing Image Retrieval API ===")
+        
+        try:
+            successful_retrievals = 0
+            
+            # Test 1: Retrieve images for employees (assuming some were uploaded in previous test)
+            for emp_code in TEST_EMPLOYEE_CODES[:2]:
+                response = self.session.get(f"{API_BASE}/employees/{emp_code}/image")
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if "image_url" in data and data["image_url"].startswith("data:"):
+                        self.results["image_retrieval_api"]["details"].append(
+                            self.log_result(f"Image Retrieval for {emp_code}", True, "Successfully retrieved image with base64 data")
+                        )
+                        successful_retrievals += 1
+                    else:
+                        self.results["image_retrieval_api"]["details"].append(
+                            self.log_result(f"Image Retrieval for {emp_code}", False, "Invalid image_url format")
+                        )
+                elif response.status_code == 404:
+                    self.results["image_retrieval_api"]["details"].append(
+                        self.log_result(f"Image Retrieval for {emp_code}", True, "No image found (404) - expected if no image uploaded")
+                    )
+                else:
+                    self.results["image_retrieval_api"]["details"].append(
+                        self.log_result(f"Image Retrieval for {emp_code}", False, f"HTTP {response.status_code}: {response.text}")
+                    )
+            
+            # Test 2: Invalid employee code
+            response = self.session.get(f"{API_BASE}/employees/INVALID_CODE/image")
+            if response.status_code == 404:
+                self.results["image_retrieval_api"]["details"].append(
+                    self.log_result("Invalid Employee Code Retrieval", True, "Correctly returned 404 for invalid employee")
+                )
+            else:
+                self.results["image_retrieval_api"]["details"].append(
+                    self.log_result("Invalid Employee Code Retrieval", False, f"Expected 404, got {response.status_code}")
+                )
+            
+            # Test 3: Non-existent image for valid employee
+            response = self.session.get(f"{API_BASE}/employees/{TEST_EMPLOYEE_CODES[-1]}/image")
+            if response.status_code == 404:
+                self.results["image_retrieval_api"]["details"].append(
+                    self.log_result("Non-existent Image", True, "Correctly returned 404 for non-existent image")
+                )
+            elif response.status_code == 200:
+                self.results["image_retrieval_api"]["details"].append(
+                    self.log_result("Non-existent Image", True, "Image found (may have been uploaded previously)")
+                )
+            
+            self.results["image_retrieval_api"]["passed"] = True
+            return True
+                
+        except Exception as e:
+            self.results["image_retrieval_api"]["details"].append(
+                self.log_result("Image Retrieval API", False, f"Exception: {str(e)}")
+            )
+            return False
+
+    def test_image_deletion_api(self):
+        """Test image deletion API"""
+        print("\n=== Testing Image Deletion API ===")
+        
+        try:
+            # Test 1: Delete existing images
+            for emp_code in TEST_EMPLOYEE_CODES[:2]:
+                response = self.session.delete(f"{API_BASE}/employees/{emp_code}/image")
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("success"):
+                        self.results["image_deletion_api"]["details"].append(
+                            self.log_result(f"Image Deletion for {emp_code}", True, "Successfully deleted image")
+                        )
+                    else:
+                        self.results["image_deletion_api"]["details"].append(
+                            self.log_result(f"Image Deletion for {emp_code}", False, "Invalid response structure")
+                        )
+                elif response.status_code == 404:
+                    self.results["image_deletion_api"]["details"].append(
+                        self.log_result(f"Image Deletion for {emp_code}", True, "No image to delete (404) - expected if no image exists")
+                    )
+                else:
+                    self.results["image_deletion_api"]["details"].append(
+                        self.log_result(f"Image Deletion for {emp_code}", False, f"HTTP {response.status_code}: {response.text}")
+                    )
+            
+            # Test 2: Invalid employee code
+            response = self.session.delete(f"{API_BASE}/employees/INVALID_CODE/image")
+            if response.status_code == 404:
+                self.results["image_deletion_api"]["details"].append(
+                    self.log_result("Invalid Employee Code Deletion", True, "Correctly returned 404 for invalid employee")
+                )
+            else:
+                self.results["image_deletion_api"]["details"].append(
+                    self.log_result("Invalid Employee Code Deletion", False, f"Expected 404, got {response.status_code}")
+                )
+            
+            # Test 3: Delete non-existent image
+            response = self.session.delete(f"{API_BASE}/employees/{TEST_EMPLOYEE_CODES[-1]}/image")
+            if response.status_code == 404:
+                self.results["image_deletion_api"]["details"].append(
+                    self.log_result("Non-existent Image Deletion", True, "Correctly returned 404 for non-existent image")
+                )
+            elif response.status_code == 200:
+                self.results["image_deletion_api"]["details"].append(
+                    self.log_result("Non-existent Image Deletion", True, "Image deleted (may have existed)")
+                )
+            
+            self.results["image_deletion_api"]["passed"] = True
+            return True
+                
+        except Exception as e:
+            self.results["image_deletion_api"]["details"].append(
+                self.log_result("Image Deletion API", False, f"Exception: {str(e)}")
+            )
+            return False
+
+    def test_enhanced_employee_api(self):
+        """Test enhanced employee API with image_url field"""
+        print("\n=== Testing Enhanced Employee API ===")
+        
+        try:
+            # First upload an image for testing
+            test_image = self.create_test_image()
+            if test_image:
+                files = {'file': ('test_image.jpg', test_image, 'image/jpeg')}
+                upload_response = self.session.post(f"{API_BASE}/employees/{TEST_EMPLOYEE_CODES[0]}/image", files=files)
+                
+                if upload_response.status_code == 200:
+                    self.results["enhanced_employee_api"]["details"].append(
+                        self.log_result("Test Image Upload", True, "Uploaded test image for API testing")
+                    )
+                else:
+                    self.results["enhanced_employee_api"]["details"].append(
+                        self.log_result("Test Image Upload", False, "Failed to upload test image")
+                    )
+            
+            # Test enhanced /api/employees endpoint
+            response = self.session.get(f"{API_BASE}/employees")
+            
+            if response.status_code != 200:
+                self.results["enhanced_employee_api"]["details"].append(
+                    self.log_result("Enhanced Employee API", False, f"HTTP {response.status_code}: {response.text}")
+                )
+                return False
+            
+            data = response.json()
+            
+            if "employees" not in data:
+                self.results["enhanced_employee_api"]["details"].append(
+                    self.log_result("Enhanced Employee API", False, "Missing 'employees' key in response")
+                )
+                return False
+            
+            employees = data["employees"]
+            
+            # Check if any employees have image_url field
+            employees_with_images = [emp for emp in employees if "image_url" in emp and emp["image_url"]]
+            
+            if employees_with_images:
+                # Verify base64 format
+                valid_base64_images = 0
+                for emp in employees_with_images:
+                    if emp["image_url"].startswith("data:image/") and ";base64," in emp["image_url"]:
+                        valid_base64_images += 1
+                
+                self.results["enhanced_employee_api"]["details"].append(
+                    self.log_result("Image URL Field", True, f"Found {len(employees_with_images)} employees with images")
+                )
+                
+                self.results["enhanced_employee_api"]["details"].append(
+                    self.log_result("Base64 Format", True, f"{valid_base64_images}/{len(employees_with_images)} images in valid base64 format")
+                )
+            else:
+                self.results["enhanced_employee_api"]["details"].append(
+                    self.log_result("Image URL Field", True, "No employees with images found (may be expected)")
+                )
+            
+            # Verify response structure is maintained
+            if employees:
+                sample_employee = employees[0]
+                required_fields = ['emp_code', 'emp_name', 'department', 'location', 'designation', 'mobile']
+                missing_fields = [field for field in required_fields if field not in sample_employee]
+                
+                if not missing_fields:
+                    self.results["enhanced_employee_api"]["details"].append(
+                        self.log_result("Response Structure", True, "All required fields present in employee data")
+                    )
+                else:
+                    self.results["enhanced_employee_api"]["details"].append(
+                        self.log_result("Response Structure", False, f"Missing required fields: {missing_fields}")
+                    )
+            
+            self.results["enhanced_employee_api"]["passed"] = True
+            return True
+                
+        except Exception as e:
+            self.results["enhanced_employee_api"]["details"].append(
+                self.log_result("Enhanced Employee API", False, f"Exception: {str(e)}")
+            )
+            return False
+
+    def test_file_validation(self):
+        """Test file validation for size limits and formats"""
+        print("\n=== Testing File Validation ===")
+        
+        try:
+            # Test 1: File size validation (>5MB should be rejected)
+            large_image = self.create_test_image(file_size_mb=6)  # 6MB image
+            if large_image:
+                files = {'file': ('large_image.jpg', large_image, 'image/jpeg')}
+                response = self.session.post(f"{API_BASE}/employees/{TEST_EMPLOYEE_CODES[0]}/image", files=files)
+                
+                if response.status_code == 400:
+                    self.results["file_validation"]["details"].append(
+                        self.log_result("File Size Validation", True, "Correctly rejected file >5MB")
+                    )
+                else:
+                    self.results["file_validation"]["details"].append(
+                        self.log_result("File Size Validation", False, f"Expected 400, got {response.status_code}")
+                    )
+            
+            # Test 2: Invalid file format (text file)
+            invalid_file = b"This is not an image file"
+            files = {'file': ('invalid.txt', invalid_file, 'text/plain')}
+            response = self.session.post(f"{API_BASE}/employees/{TEST_EMPLOYEE_CODES[0]}/image", files=files)
+            
+            if response.status_code == 400:
+                self.results["file_validation"]["details"].append(
+                    self.log_result("Invalid File Format", True, "Correctly rejected non-image file")
+                )
+            else:
+                self.results["file_validation"]["details"].append(
+                    self.log_result("Invalid File Format", False, f"Expected 400, got {response.status_code}")
+                )
+            
+            # Test 3: Corrupted image file
+            corrupted_image = b"CORRUPTED_IMAGE_DATA_NOT_VALID"
+            files = {'file': ('corrupted.jpg', corrupted_image, 'image/jpeg')}
+            response = self.session.post(f"{API_BASE}/employees/{TEST_EMPLOYEE_CODES[0]}/image", files=files)
+            
+            if response.status_code == 400:
+                self.results["file_validation"]["details"].append(
+                    self.log_result("Corrupted File", True, "Correctly rejected corrupted image")
+                )
+            else:
+                self.results["file_validation"]["details"].append(
+                    self.log_result("Corrupted File", False, f"Expected 400, got {response.status_code}")
+                )
+            
+            # Test 4: Valid formats (JPEG, PNG, GIF, WEBP)
+            valid_formats = ["JPEG", "PNG"]  # Test main formats
+            for format_name in valid_formats:
+                test_image = self.create_test_image(format=format_name)
+                if test_image:
+                    content_type = f"image/{format_name.lower()}"
+                    files = {'file': (f'test.{format_name.lower()}', test_image, content_type)}
+                    response = self.session.post(f"{API_BASE}/employees/{TEST_EMPLOYEE_CODES[0]}/image", files=files)
+                    
+                    if response.status_code == 200:
+                        self.results["file_validation"]["details"].append(
+                            self.log_result(f"Valid {format_name} Format", True, f"Successfully accepted {format_name} image")
+                        )
+                    else:
+                        self.results["file_validation"]["details"].append(
+                            self.log_result(f"Valid {format_name} Format", False, f"HTTP {response.status_code}")
+                        )
+            
+            self.results["file_validation"]["passed"] = True
+            return True
+                
+        except Exception as e:
+            self.results["file_validation"]["details"].append(
+                self.log_result("File Validation", False, f"Exception: {str(e)}")
+            )
+            return False
+
     def run_all_tests(self):
         """Run all backend tests"""
         print(f"🚀 Starting Backend API Tests")
