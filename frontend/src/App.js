@@ -273,8 +273,34 @@ function App() {
   const [showAllEmployees, setShowAllEmployees] = useState(false);
   const [showImageUpload, setShowImageUpload] = useState(false);
   const [toast, setToast] = useState(null);
+  const [darkMode, setDarkMode] = useState(false);
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL;
+
+  useEffect(() => {
+    fetchAllEmployees();
+    fetchFieldValues();
+    
+    // Load theme preference from localStorage
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      setDarkMode(true);
+      document.documentElement.classList.add('dark');
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    
+    if (newDarkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  };
 
   useEffect(() => {
     fetchAllEmployees();
