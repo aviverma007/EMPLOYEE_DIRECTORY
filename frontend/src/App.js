@@ -411,6 +411,7 @@ function App() {
     const newSearchFields = { ...searchFields, [field]: value };
     setSearchFields(newSearchFields);
     setShowSuggestions(prev => ({ ...prev, [field]: false }));
+    setSuggestions(prev => ({ ...prev, [field]: [] }));
     
     applyFilters(newSearchFields);
   };
