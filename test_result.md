@@ -150,6 +150,18 @@ backend:
         agent: "testing"
         comment: "✅ TESTED: Attendance generation system working perfectly. Tested /api/employees/{emp_code}/attendance for all test employee codes. Generates realistic attendance data with proper status (Present/Late/Half Day/Absent), today's date, check-in/out times, and hours worked calculation. Response structure includes all required fields (emp_code, emp_name, date, status, hours_worked). Returns 404 for non-existent employees as expected."
 
+  - task: "Department filtering API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Department API working perfectly. /api/department/{department_name}/employees correctly filters employees by department. Tested with 'IT' department - returned 5 employees with proper response structure including 'employees', 'department', and 'count' fields. Count matches actual employee array length. All returned employees belong to correct department. Non-existent departments correctly return 0 employees."
+
 frontend:
   - task: "Search interface with 6 filter fields"
     implemented: true
