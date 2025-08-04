@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """
 Backend API Testing for Employee Directory
-Tests Google Sheets integration, search, filtering, attendance, and department APIs
+Tests Google Sheets integration, search, filtering, attendance, department APIs, and image upload functionality
 """
 
 import requests
 import json
 import sys
+import base64
+import io
 from datetime import datetime
+from PIL import Image
 
 # Backend URL from frontend/.env
 BACKEND_URL = "https://3755492d-69ff-4c4c-89ca-305a02a5b067.preview.emergentagent.com"
@@ -23,7 +26,12 @@ class BackendTester:
             "search_api": {"passed": False, "details": []},
             "filter_api": {"passed": False, "details": []},
             "attendance_api": {"passed": False, "details": []},
-            "department_api": {"passed": False, "details": []}
+            "department_api": {"passed": False, "details": []},
+            "image_upload_api": {"passed": False, "details": []},
+            "image_retrieval_api": {"passed": False, "details": []},
+            "image_deletion_api": {"passed": False, "details": []},
+            "enhanced_employee_api": {"passed": False, "details": []},
+            "file_validation": {"passed": False, "details": []}
         }
         self.session = requests.Session()
         self.session.timeout = 30
