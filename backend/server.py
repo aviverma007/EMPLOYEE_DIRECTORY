@@ -409,7 +409,8 @@ async def filter_employees(
     department: str = "",
     location: str = "",
     designation: str = "",  # Changed from grade to designation
-    mobile: str = ""
+    mobile: str = "",
+    email: str = ""
 ):
     """Filter employees by multiple criteria (changed grade to designation)"""
     filtered_employees = employees_data.copy()
@@ -420,7 +421,8 @@ async def filter_employees(
         'department': department,
         'location': location,
         'designation': designation,  # Changed from grade
-        'mobile': mobile
+        'mobile': mobile,
+        'email': email
     }
     
     for field, value in filters.items():
@@ -430,7 +432,16 @@ async def filter_employees(
                 if emp.get(field, "").lower() == value.lower()
             ]
     
-    return {"employees": filtered_employees}
+    # Add images to filtered employees
+    enriched_filtered = []
+    for emp in filtered_employees:
+        emp_copy = emp.copy()
+        image_url = get_employee_image_from_db(emp['emp_code'])
+        if image_url:
+            emp_copy['image_url'] = image_url
+        enriched_filtered.append(emp_copy)
+    
+    return {"employees": enriched_filtered}
 
 @app.get("/api/employees/{emp_code}/attendance")
 async def get_employee_attendance(emp_code: str):
