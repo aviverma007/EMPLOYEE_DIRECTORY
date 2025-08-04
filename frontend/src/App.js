@@ -638,8 +638,8 @@ function App() {
           {!hasActiveFilters && !showAllEmployees ? (
             <div className="text-center py-16 animate-fade-in">
               <div className="text-8xl mb-6 text-blue-400 animate-bounce">🔍</div>
-              <h3 className="text-professional-primary text-2xl font-bold mb-3">Discover Our Team</h3>
-              <p className="text-professional-secondary mb-8 text-lg">Use the advanced filters above to find employees</p>
+              <h3 className="text-professional-primary dark:text-white text-2xl font-bold mb-3">Discover Our Team</h3>
+              <p className="text-professional-secondary dark:text-gray-300 mb-8 text-lg">Use the advanced filters above to find employees</p>
               <button
                 onClick={viewAllEmployees}
                 className="btn-primary text-lg px-8 py-4 ripple"
@@ -650,8 +650,8 @@ function App() {
           ) : displayedEmployees.length === 0 ? (
             <div className="text-center py-16 animate-fade-in">
               <div className="text-8xl mb-6 text-gray-400">😔</div>
-              <h3 className="text-gray-600 text-xl font-bold mb-3">No Employees Found</h3>
-              <p className="text-gray-500 mb-6">Try adjusting your search criteria</p>
+              <h3 className="text-gray-600 dark:text-gray-300 text-xl font-bold mb-3">No Employees Found</h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-6">Try adjusting your search criteria</p>
               <button
                 onClick={clearAllFilters}
                 className="btn-primary ripple"
@@ -662,7 +662,7 @@ function App() {
           ) : (
             <>
               <div className="flex justify-between items-center mb-8">
-                <h2 className="text-2xl font-bold text-professional-primary animate-fade-in">
+                <h2 className="text-2xl font-bold text-professional-primary dark:text-white animate-fade-in">
                   Our Team ({displayedEmployees.length} {displayedEmployees.length === 1 ? 'Employee' : 'Employees'})
                 </h2>
               </div>
