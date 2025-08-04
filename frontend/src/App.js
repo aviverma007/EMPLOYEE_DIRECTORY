@@ -632,6 +632,7 @@ function App() {
                     type="text"
                     value={searchFields[key]}
                     onChange={(e) => handleSearchChange(key, e.target.value)}
+                    onFocus={() => handleInputFocus(key)}
                     placeholder={placeholder}
                     className="search-input"
                   />
