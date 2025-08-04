@@ -302,6 +302,16 @@ function App() {
       setDarkMode(true);
       document.documentElement.classList.add('dark');
     }
+
+    // Close suggestions when clicking outside
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.relative')) {
+        setShowSuggestions({});
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
   const showToast = (message, type = 'info') => {
