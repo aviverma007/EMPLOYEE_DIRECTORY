@@ -298,8 +298,17 @@ async def startup_event():
 
 @app.get("/api/employees")
 async def get_all_employees():
-    """Get all employees"""
-    return {"employees": employees_data}
+    """Get all employees with their images"""
+    enriched_employees = []
+    for emp in employees_data:
+        emp_copy = emp.copy()
+        # Add image URL if available
+        image_url = get_employee_image_from_db(emp['emp_code'])
+        if image_url:
+            emp_copy['image_url'] = image_url
+        enriched_employees.append(emp_copy)
+    
+    return {"employees": enriched_employees}
 
 @app.get("/api/employees/search")
 async def search_employees(q: str = "", field: str = ""):
