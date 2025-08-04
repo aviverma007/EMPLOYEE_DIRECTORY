@@ -85,7 +85,7 @@ class BackendTester:
                 return False
             
             # Check column mapping - verify required fields exist
-            required_fields = ['emp_code', 'emp_name', 'department', 'location', 'grade', 'mobile', 'extension_number']
+            required_fields = ['emp_code', 'emp_name', 'department', 'location', 'designation', 'mobile']
             sample_employee = employees[0]
             missing_fields = [field for field in required_fields if field not in sample_employee]
             
