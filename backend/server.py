@@ -67,6 +67,17 @@ class Employee(BaseModel):
     image_url: Optional[str] = None
     reporting_manager: Optional[str] = None
 
+class EmployeeImage(BaseModel):
+    emp_code: str
+    image_data: str  # base64 encoded image
+    image_type: str  # image/jpeg, image/png, etc.
+    uploaded_at: str
+
+class ImageUploadResponse(BaseModel):
+    success: bool
+    message: str
+    image_url: Optional[str] = None
+
 class AttendanceRecord(BaseModel):
     emp_code: str
     emp_name: str
