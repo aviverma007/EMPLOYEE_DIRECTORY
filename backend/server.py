@@ -87,6 +87,72 @@ class AttendanceRecord(BaseModel):
     status: str
     hours_worked: Optional[float] = None
 
+def validate_image(file_content: bytes, max_size_mb: int = 5) -> tuple[bool, str]:
+    """Validate uploaded image file"""
+    try:
+        # Check file size
+        if len(file_content) > max_size_mb * 1024 * 1024:
+            return False, f"File size too large. Maximum {max_size_mb}MB allowed."
+        
+        # Validate image format
+        image = Image.open(io.BytesIO(file_content))
+        if image.format not in ['JPEG', 'PNG', 'GIF', 'WEBP']:
+            return False, "Invalid image format. Only JPEG, PNG, GIF, and WEBP are allowed."
+        
+        return True, "Valid image"
+    except Exception as e:
+        return False, f"Invalid image file: {str(e)}"
+
+def get_employee_image_from_db(emp_code: str) -> Optional[str]:
+    """Get employee image from MongoDB"""
+    if not images_collection:
+        return None
+    
+    try:
+        image_doc = images_collection.find_one({"emp_code": emp_code})
+        if image_doc:
+            return f"data:{image_doc['image_type']};base64,{image_doc['image_data']}"
+        return None
+    except Exception as e:
+        print(f"Error fetching image for {emp_code}: {e}")
+        return None
+
+def save_employee_image_to_db(emp_code: str, image_data: str, image_type: str) -> bool:
+    """Save employee image to MongoDB"""
+    if not images_collection:
+        return False
+    
+    try:
+        image_doc = {
+            "emp_code": emp_code,
+            "image_data": image_data,
+            "image_type": image_type,
+            "uploaded_at": datetime.now().isoformat()
+        }
+        
+        # Use upsert to replace existing image
+        images_collection.replace_one(
+            {"emp_code": emp_code}, 
+            image_doc, 
+            upsert=True
+        )
+        return True
+    except Exception as e:
+        print(f"Error saving image for {emp_code}: {e}")
+        return False
+
+def delete_employee_image_from_db(emp_code: str) -> bool:
+    """Delete employee image from MongoDB"""
+    if not images_collection:
+        return False
+    
+    try:
+        result = images_collection.delete_one({"emp_code": emp_code})
+        return result.deleted_count > 0
+    except Exception as e:
+        print(f"Error deleting image for {emp_code}: {e}")
+        return False
+
 def fetch_employee_data():
     """Fetch employee data from Google Sheets"""
     global employees_data
