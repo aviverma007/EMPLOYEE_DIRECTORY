@@ -119,7 +119,7 @@ def get_employee_image_from_db(emp_code: str) -> Optional[str]:
 
 def save_employee_image_to_db(emp_code: str, image_data: str, image_type: str) -> bool:
     """Save employee image to MongoDB"""
-    if not images_collection:
+    if images_collection is None:
         return False
     
     try:
