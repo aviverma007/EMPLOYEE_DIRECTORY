@@ -819,7 +819,12 @@ class BackendTester:
             ("Search API", self.test_search_api),
             ("Filter API", self.test_filter_api),
             ("Attendance API", self.test_attendance_api),
-            ("Department API", self.test_department_api)
+            ("Department API", self.test_department_api),
+            ("Image Upload API", self.test_image_upload_api),
+            ("Image Retrieval API", self.test_image_retrieval_api),
+            ("Image Deletion API", self.test_image_deletion_api),
+            ("Enhanced Employee API", self.test_enhanced_employee_api),
+            ("File Validation", self.test_file_validation)
         ]
         
         passed_tests = 0
