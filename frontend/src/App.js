@@ -527,10 +527,10 @@ function App() {
       )}
 
       {/* Enhanced Header */}
-      <div className="header-professional shadow-professional">
+      <div className="header-professional shadow-professional dark:bg-gray-800 dark:border-gray-600">
         <div className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-center space-x-4">
-            <div className="company-logo w-16 h-16 rounded-xl shadow-lg overflow-hidden border-2 border-white">
+            <div className="company-logo w-16 h-16 rounded-xl shadow-lg overflow-hidden border-2 border-white dark:border-gray-600">
               <img 
                 src="/smartworld-logo.png" 
                 alt="Smartworld Developers Logo" 
@@ -545,10 +545,10 @@ function App() {
               </div>
             </div>
             <div className="text-center">
-              <h1 className="text-3xl font-bold text-professional-primary mb-1 animate-fade-in">
+              <h1 className="text-3xl font-bold text-professional-primary dark:text-white mb-1 animate-fade-in">
                 SMARTWORLD DEVELOPERS PVT. LTD.
               </h1>
-              <p className="text-professional-secondary">Employee Directory</p>
+              <p className="text-professional-secondary dark:text-gray-300">Employee Directory</p>
             </div>
           </div>
         </div>
