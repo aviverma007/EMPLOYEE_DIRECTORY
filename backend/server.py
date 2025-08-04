@@ -53,6 +53,8 @@ COLUMN_MAPPING = {
     'LOCATION': 'location',
     'GRADE': 'designation',  # Changed from 'grade' to 'designation'
     'MOBILE': 'mobile',
+    'EMAIL': 'email',
+    'JOINING DATE': 'joining_date',
     'IMAGE': 'image_url',
     'REPORTING MANAGER': 'reporting_manager'
 }
