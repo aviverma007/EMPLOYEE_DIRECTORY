@@ -431,7 +431,8 @@ function App() {
       department: '',
       location: '',
       designation: '',
-      mobile: ''
+      mobile: '',
+      email: ''
     });
     setFilteredEmployees([]);
     setSuggestions({});
