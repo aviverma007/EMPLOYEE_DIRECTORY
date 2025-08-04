@@ -442,6 +442,10 @@ function App() {
       
       const response = await fetch(`${backendUrl}/api/employees/filter?${queryString}`);
       const data = await response.json();
+      
+      // Ensure we're showing the right employees by logging the filter
+      console.log(`Applied filters:`, activeFilters, `Found ${data.employees.length} employees`);
+      
       setFilteredEmployees(data.employees);
       setShowAllEmployees(false);
     } catch (error) {
