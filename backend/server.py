@@ -326,30 +326,57 @@ async def get_all_employees():
 
 @app.get("/api/employees/search")
 async def search_employees(q: str = "", field: str = ""):
-    """Search employees with suggestions"""
+    """Enhanced search employees with improved suggestions and filtering"""
     if not q:
-        return {"suggestions": [], "employees": employees_data}
+        # Return all employees and some sample suggestions for the field
+        suggestions = []
+        if field and field in ['emp_code', 'emp_name', 'department', 'location', 'designation', 'mobile', 'email']:
+            # Get first 10 unique values for suggestions
+            field_values = set()
+            for emp in employees_data:
+                if field in emp and emp[field]:
+                    field_values.add(emp[field])
+            suggestions = sorted(list(field_values))[:10]
+        
+        # Return employees with images
+        enriched_employees = []
+        for emp in employees_data:
+            emp_copy = emp.copy()
+            image_url = get_employee_image_from_db(emp['emp_code'])
+            if image_url:
+                emp_copy['image_url'] = image_url
+            enriched_employees.append(emp_copy)
+        
+        return {"suggestions": suggestions, "employees": enriched_employees}
     
     q = q.lower()
     suggestions = []
     matching_employees = []
     
-    # Get all possible values for the field (changed grade to designation)
-    if field and field in ['emp_code', 'emp_name', 'department', 'location', 'designation', 'mobile']:
+    # Enhanced search with email and joining_date included
+    searchable_fields = ['emp_code', 'emp_name', 'department', 'location', 'designation', 'mobile', 'email']
+    
+    if field and field in searchable_fields:
         # Get unique values for dropdown suggestions
         field_values = set()
         for emp in employees_data:
             if field in emp and emp[field]:
                 field_values.add(emp[field])
         
-        # Filter suggestions based on query
-        suggestions = [val for val in field_values if q in val.lower()][:10]
+        # Enhanced suggestions: show both "starts with" and "contains" results
+        starts_with = [val for val in field_values if val.lower().startswith(q)]
+        contains = [val for val in field_values if q in val.lower() and not val.lower().startswith(q)]
         
-        # If exact match found in suggestions, get matching employees
-        for suggestion in suggestions:
-            if q == suggestion.lower():
-                matching_employees = [emp for emp in employees_data if emp.get(field, "").lower() == q]
-                break
+        # Prioritize "starts with" matches, then "contains" matches
+        suggestions = sorted(starts_with) + sorted(contains)
+        suggestions = suggestions[:10]  # Limit to 10 suggestions
+        
+        # Get all employees that match the query (both starts with and contains)
+        for emp in employees_data:
+            if field in emp and emp[field]:
+                field_value = emp[field].lower()
+                if q in field_value:  # This includes both starts with and contains
+                    matching_employees.append(emp)
     else:
         # Global search across all fields
         for emp in employees_data:
@@ -361,9 +388,18 @@ async def search_employees(q: str = "", field: str = ""):
             if match:
                 matching_employees.append(emp)
     
+    # Add images to matching employees
+    enriched_matching = []
+    for emp in matching_employees:
+        emp_copy = emp.copy()
+        image_url = get_employee_image_from_db(emp['emp_code'])
+        if image_url:
+            emp_copy['image_url'] = image_url
+        enriched_matching.append(emp_copy)
+    
     return {
         "suggestions": suggestions,
-        "employees": matching_employees
+        "employees": enriched_matching
     }
 
 @app.get("/api/employees/filter")
