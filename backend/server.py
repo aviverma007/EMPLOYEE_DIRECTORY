@@ -332,7 +332,7 @@ async def search_employees(q: str = "", field: str = ""):
     if not q:
         # Return all employees and some sample suggestions for the field
         suggestions = []
-        if field and field in ['emp_code', 'emp_name', 'department', 'location', 'designation', 'mobile', 'email']:
+        if field and field in ['emp_code', 'emp_name', 'department', 'location', 'designation', 'mobile', 'extension_number', 'email']:
             # Get first 10 unique values for suggestions
             field_values = set()
             for emp in employees_data:
