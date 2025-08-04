@@ -25,7 +25,7 @@ SHEETS_CSV_URL = "https://docs.google.com/spreadsheets/d/1z5MgsofbAdxCBlNY2wg1FB
 # In-memory storage for employee data
 employees_data = []
 
-# Column mapping from Google Sheets to our fields
+# Updated Column mapping - removed extension_number
 COLUMN_MAPPING = {
     'EMP ID': 'emp_code',
     'EMP NAME': 'emp_name', 
@@ -33,7 +33,6 @@ COLUMN_MAPPING = {
     'LOCATION': 'location',
     'GRADE': 'grade',
     'MOBILE': 'mobile',
-    'EXTENSION NUMBER': 'extension_number',
     'IMAGE': 'image_url',
     'REPORTING MANAGER': 'reporting_manager'
 }
@@ -45,7 +44,6 @@ class Employee(BaseModel):
     location: str
     grade: str
     mobile: str
-    extension_number: str
     image_url: Optional[str] = None
     reporting_manager: Optional[str] = None
 
@@ -89,8 +87,8 @@ def fetch_employee_data():
                 if i < len(values) and header in COLUMN_MAPPING:
                     employee[COLUMN_MAPPING[header]] = values[i]
             
-            # Ensure all required fields exist
-            required_fields = ['emp_code', 'emp_name', 'department', 'location', 'grade', 'mobile', 'extension_number']
+            # Ensure all required fields exist (removed extension_number)
+            required_fields = ['emp_code', 'emp_name', 'department', 'location', 'grade', 'mobile']
             if all(field in employee for field in required_fields):
                 employees_data.append(employee)
                 
@@ -107,7 +105,6 @@ def fetch_employee_data():
                 "location": "IFC",
                 "grade": "IT EXECUTIVE",
                 "mobile": "8929987500",
-                "extension_number": "7626",
                 "reporting_manager": "CHANDAN"
             },
             {
@@ -117,7 +114,6 @@ def fetch_employee_data():
                 "location": "IFC",
                 "grade": "IT EXECUTIVE",
                 "mobile": "8929987500",
-                "extension_number": "7626",
                 "reporting_manager": "CHANDAN"
             },
             {
@@ -127,7 +123,6 @@ def fetch_employee_data():
                 "location": "IFC",
                 "grade": "SENIOR MANAGER",
                 "mobile": "8929987500",
-                "extension_number": "7626",
                 "reporting_manager": "NITIN GUPTA"
             },
             {
@@ -137,7 +132,6 @@ def fetch_employee_data():
                 "location": "IFC",
                 "grade": "AVP",
                 "mobile": "8929987500",
-                "extension_number": "7626",
                 "reporting_manager": "HARI"
             },
             {
@@ -147,7 +141,6 @@ def fetch_employee_data():
                 "location": "IFC",
                 "grade": "SENIOR MANAGER",
                 "mobile": "8929987500",
-                "extension_number": "7626",
                 "reporting_manager": "RANJEET SARKAR"
             }
         ]
@@ -221,8 +214,8 @@ async def search_employees(q: str = "", field: str = ""):
     suggestions = []
     matching_employees = []
     
-    # Get all possible values for the field
-    if field and field in ['emp_code', 'emp_name', 'department', 'location', 'grade', 'mobile', 'extension_number']:
+    # Get all possible values for the field (removed extension_number)
+    if field and field in ['emp_code', 'emp_name', 'department', 'location', 'grade', 'mobile']:
         # Get unique values for dropdown suggestions
         field_values = set()
         for emp in employees_data:
@@ -260,10 +253,9 @@ async def filter_employees(
     department: str = "",
     location: str = "",
     grade: str = "",
-    mobile: str = "",
-    extension_number: str = ""
+    mobile: str = ""
 ):
-    """Filter employees by multiple criteria"""
+    """Filter employees by multiple criteria (removed extension_number)"""
     filtered_employees = employees_data.copy()
     
     filters = {
@@ -272,8 +264,7 @@ async def filter_employees(
         'department': department,
         'location': location,
         'grade': grade,
-        'mobile': mobile,
-        'extension_number': extension_number
+        'mobile': mobile
     }
     
     for field, value in filters.items():
@@ -315,15 +306,14 @@ async def get_department_employees(department_name: str):
 
 @app.get("/api/field-values")
 async def get_field_values():
-    """Get all unique values for each searchable field"""
+    """Get all unique values for each searchable field (removed extension_numbers)"""
     field_values = {
         'departments': list(set(emp.get('department', '') for emp in employees_data if emp.get('department'))),
         'locations': list(set(emp.get('location', '') for emp in employees_data if emp.get('location'))),
         'grades': list(set(emp.get('grade', '') for emp in employees_data if emp.get('grade'))),
         'emp_codes': list(set(emp.get('emp_code', '') for emp in employees_data if emp.get('emp_code'))),
         'emp_names': list(set(emp.get('emp_name', '') for emp in employees_data if emp.get('emp_name'))),
-        'mobiles': list(set(emp.get('mobile', '') for emp in employees_data if emp.get('mobile'))),
-        'extension_numbers': list(set(emp.get('extension_number', '') for emp in employees_data if emp.get('extension_number')))
+        'mobiles': list(set(emp.get('mobile', '') for emp in employees_data if emp.get('mobile')))
     }
     
     return field_values
