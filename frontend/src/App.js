@@ -361,7 +361,8 @@ function App() {
                        field === 'department' ? 'departments' :
                        field === 'location' ? 'locations' :
                        field === 'designation' ? 'designations' :
-                       'mobiles';
+                       field === 'mobile' ? 'mobiles' :
+                       'emails';
       
       const fieldSuggestions = fieldValues[fieldKey] || [];
       const matchingSuggestions = fieldSuggestions.filter(item => 
