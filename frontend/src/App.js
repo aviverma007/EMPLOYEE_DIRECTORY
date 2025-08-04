@@ -9,7 +9,7 @@ function App() {
     emp_name: '',
     department: '',
     location: '',
-    grade: '',
+    designation: '',
     mobile: ''
   });
   const [suggestions, setSuggestions] = useState({});
@@ -61,7 +61,7 @@ function App() {
                        field === 'emp_code' ? 'emp_codes' :
                        field === 'department' ? 'departments' :
                        field === 'location' ? 'locations' :
-                       field === 'grade' ? 'grades' :
+                       field === 'designation' ? 'designations' :
                        'mobiles';
       
       const fieldSuggestions = fieldValues[fieldKey] || [];
@@ -131,7 +131,7 @@ function App() {
       emp_name: '',
       department: '',
       location: '',
-      grade: '',
+      designation: '',
       mobile: ''
     });
     setFilteredEmployees([]);
@@ -167,7 +167,7 @@ function App() {
     { key: 'emp_name', label: 'Employee Name', placeholder: 'Employee Name', icon: '👤' },
     { key: 'department', label: 'Department', placeholder: 'Department', icon: '🏢' },
     { key: 'location', label: 'Location', placeholder: 'Location', icon: '📍' },
-    { key: 'grade', label: 'Grade', placeholder: 'Grade', icon: '⭐' },
+    { key: 'designation', label: 'Designation', placeholder: 'Designation', icon: '⭐' },
     { key: 'mobile', label: 'Mobile', placeholder: 'Mobile Number', icon: '📱' }
   ];
 
@@ -319,7 +319,7 @@ function App() {
                           {employee.emp_name.charAt(0)}
                         </div>
                         <h3 className="font-bold text-gray-800 text-sm mb-1">{employee.emp_name}</h3>
-                        <p className="text-blue-600 font-medium text-xs mb-2">{employee.grade}</p>
+                        <p className="text-blue-600 font-medium text-xs mb-2">{employee.designation}</p>
                         <p className="text-gray-500 text-xs">#{employee.emp_code}</p>
                       </div>
                       
@@ -363,7 +363,7 @@ function App() {
                             </td>
                             <td className="px-4 py-3 whitespace-nowrap">
                               <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
-                                {employee.grade}
+                                {employee.designation}
                               </span>
                             </td>
                             <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{employee.department}</td>
@@ -407,7 +407,7 @@ function App() {
                   <div className="space-y-4">
                     {[
                       { label: 'Department', value: selectedEmployee.department, icon: '🏢' },
-                      { label: 'Designation', value: selectedEmployee.grade, icon: '⭐' },
+                      { label: 'Designation', value: selectedEmployee.designation, icon: '⭐' },
                       { label: 'Location', value: selectedEmployee.location, icon: '📍' },
                       { label: 'Mobile', value: selectedEmployee.mobile, icon: '📱' }
                     ].map((field, idx) => (

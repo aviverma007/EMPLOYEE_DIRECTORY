@@ -25,13 +25,13 @@ SHEETS_CSV_URL = "https://docs.google.com/spreadsheets/d/1z5MgsofbAdxCBlNY2wg1FB
 # In-memory storage for employee data
 employees_data = []
 
-# Updated Column mapping - removed extension_number
+# Updated Column mapping - changed grade to designation
 COLUMN_MAPPING = {
     'EMP ID': 'emp_code',
     'EMP NAME': 'emp_name', 
     'DEPARTMENT': 'department',
     'LOCATION': 'location',
-    'GRADE': 'grade',
+    'GRADE': 'designation',  # Changed from 'grade' to 'designation'
     'MOBILE': 'mobile',
     'IMAGE': 'image_url',
     'REPORTING MANAGER': 'reporting_manager'
@@ -42,7 +42,7 @@ class Employee(BaseModel):
     emp_name: str
     department: str
     location: str
-    grade: str
+    designation: str  # Changed from grade to designation
     mobile: str
     image_url: Optional[str] = None
     reporting_manager: Optional[str] = None
@@ -87,8 +87,8 @@ def fetch_employee_data():
                 if i < len(values) and header in COLUMN_MAPPING:
                     employee[COLUMN_MAPPING[header]] = values[i]
             
-            # Ensure all required fields exist (removed extension_number)
-            required_fields = ['emp_code', 'emp_name', 'department', 'location', 'grade', 'mobile']
+            # Ensure all required fields exist (changed grade to designation)
+            required_fields = ['emp_code', 'emp_name', 'department', 'location', 'designation', 'mobile']
             if all(field in employee for field in required_fields):
                 employees_data.append(employee)
                 
@@ -96,14 +96,14 @@ def fetch_employee_data():
         
     except Exception as e:
         print(f"Error fetching employee data: {e}")
-        # Use sample data if Google Sheets fails
+        # Use sample data if Google Sheets fails (changed grade to designation)
         employees_data = [
             {
                 "emp_code": "81096",
                 "emp_name": "ANIRUDH VERMA",
                 "department": "IT",
                 "location": "IFC",
-                "grade": "IT EXECUTIVE",
+                "designation": "IT EXECUTIVE",  # Changed from grade
                 "mobile": "8929987500",
                 "reporting_manager": "CHANDAN"
             },
@@ -112,7 +112,7 @@ def fetch_employee_data():
                 "emp_name": "BINAY KUMAR",
                 "department": "IT",
                 "location": "IFC",
-                "grade": "IT EXECUTIVE",
+                "designation": "IT EXECUTIVE",  # Changed from grade
                 "mobile": "8929987500",
                 "reporting_manager": "CHANDAN"
             },
@@ -121,7 +121,7 @@ def fetch_employee_data():
                 "emp_name": "NEERAJ KALRA",
                 "department": "IT",
                 "location": "IFC",
-                "grade": "SENIOR MANAGER",
+                "designation": "SENIOR MANAGER",  # Changed from grade
                 "mobile": "8929987500",
                 "reporting_manager": "NITIN GUPTA"
             },
@@ -130,7 +130,7 @@ def fetch_employee_data():
                 "emp_name": "NITIN GUPTA",
                 "department": "IT",
                 "location": "IFC",
-                "grade": "AVP",
+                "designation": "AVP",  # Changed from grade
                 "mobile": "8929987500",
                 "reporting_manager": "HARI"
             },
@@ -139,7 +139,7 @@ def fetch_employee_data():
                 "emp_name": "CHANDAN",
                 "department": "IT",
                 "location": "IFC",
-                "grade": "SENIOR MANAGER",
+                "designation": "SENIOR MANAGER",  # Changed from grade
                 "mobile": "8929987500",
                 "reporting_manager": "RANJEET SARKAR"
             }
@@ -214,8 +214,8 @@ async def search_employees(q: str = "", field: str = ""):
     suggestions = []
     matching_employees = []
     
-    # Get all possible values for the field (removed extension_number)
-    if field and field in ['emp_code', 'emp_name', 'department', 'location', 'grade', 'mobile']:
+    # Get all possible values for the field (changed grade to designation)
+    if field and field in ['emp_code', 'emp_name', 'department', 'location', 'designation', 'mobile']:
         # Get unique values for dropdown suggestions
         field_values = set()
         for emp in employees_data:
@@ -252,10 +252,10 @@ async def filter_employees(
     emp_name: str = "",
     department: str = "",
     location: str = "",
-    grade: str = "",
+    designation: str = "",  # Changed from grade to designation
     mobile: str = ""
 ):
-    """Filter employees by multiple criteria (removed extension_number)"""
+    """Filter employees by multiple criteria (changed grade to designation)"""
     filtered_employees = employees_data.copy()
     
     filters = {
@@ -263,7 +263,7 @@ async def filter_employees(
         'emp_name': emp_name,
         'department': department,
         'location': location,
-        'grade': grade,
+        'designation': designation,  # Changed from grade
         'mobile': mobile
     }
     
@@ -306,11 +306,11 @@ async def get_department_employees(department_name: str):
 
 @app.get("/api/field-values")
 async def get_field_values():
-    """Get all unique values for each searchable field (removed extension_numbers)"""
+    """Get all unique values for each searchable field (changed grades to designations)"""
     field_values = {
         'departments': list(set(emp.get('department', '') for emp in employees_data if emp.get('department'))),
         'locations': list(set(emp.get('location', '') for emp in employees_data if emp.get('location'))),
-        'grades': list(set(emp.get('grade', '') for emp in employees_data if emp.get('grade'))),
+        'designations': list(set(emp.get('designation', '') for emp in employees_data if emp.get('designation'))),  # Changed from grades
         'emp_codes': list(set(emp.get('emp_code', '') for emp in employees_data if emp.get('emp_code'))),
         'emp_names': list(set(emp.get('emp_name', '') for emp in employees_data if emp.get('emp_name'))),
         'mobiles': list(set(emp.get('mobile', '') for emp in employees_data if emp.get('mobile')))
