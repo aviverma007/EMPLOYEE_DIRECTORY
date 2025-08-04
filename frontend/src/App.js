@@ -557,13 +557,13 @@ function App() {
             {searchFieldsConfig.map(({ key, label, placeholder, icon }) => (
               <div key={key} className="relative">
                 <div className="relative">
-                  <span className="absolute left-3 top-3 text-lg">{icon}</span>
+                  <span className="search-input-icon">{icon}</span>
                   <input
                     type="text"
                     value={searchFields[key]}
                     onChange={(e) => handleSearchChange(key, e.target.value)}
                     placeholder={placeholder}
-                    className="search-input pl-12"
+                    className="search-input"
                   />
                 </div>
                 
