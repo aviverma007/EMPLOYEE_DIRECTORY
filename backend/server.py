@@ -355,8 +355,8 @@ async def search_employees(q: str = "", field: str = ""):
     suggestions = []
     matching_employees = []
     
-    # Enhanced search with email and joining_date included
-    searchable_fields = ['emp_code', 'emp_name', 'department', 'location', 'designation', 'mobile', 'email']
+    # Enhanced search with email, extension_number and joining_date included
+    searchable_fields = ['emp_code', 'emp_name', 'department', 'location', 'designation', 'mobile', 'extension_number', 'email']
     
     if field and field in searchable_fields:
         # Get unique values for dropdown suggestions
