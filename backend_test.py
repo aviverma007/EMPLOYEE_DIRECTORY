@@ -203,7 +203,7 @@ class BackendTester:
             single_filters = [
                 {"department": "IT", "description": "Department filter"},
                 {"location": "IFC", "description": "Location filter"},
-                {"grade": "IT EXECUTIVE", "description": "Grade filter"}
+                {"designation": "IT EXECUTIVE", "description": "Designation filter"}
             ]
             
             for filter_test in single_filters:
