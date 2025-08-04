@@ -345,6 +345,14 @@ function App() {
     const newSearchFields = { ...searchFields, [field]: value };
     setSearchFields(newSearchFields);
 
+    // Only show suggestions when user has typed something
+    if (value.length === 0) {
+      setSuggestions(prev => ({ ...prev, [field]: [] }));
+      setShowSuggestions(prev => ({ ...prev, [field]: false }));
+      applyFilters(newSearchFields);
+      return;
+    }
+
     try {
       // Use the enhanced backend API for better suggestions
       const response = await fetch(`${backendUrl}/api/employees/search?q=${encodeURIComponent(value)}&field=${field}`);
@@ -375,15 +383,16 @@ function App() {
                          field === 'location' ? 'locations' :
                          field === 'designation' ? 'designations' :
                          field === 'mobile' ? 'mobiles' :
+                         field === 'extension_number' ? 'extension_numbers' :
                          'emails';
         
         const fieldSuggestions = fieldValues[fieldKey] || [];
         const matchingSuggestions = fieldSuggestions.filter(item => 
-          item.toLowerCase().includes(value.toLowerCase())
+          item && item.toLowerCase().includes(value.toLowerCase())
         ).slice(0, 6);
         
         setSuggestions(prev => ({ ...prev, [field]: matchingSuggestions }));
-        setShowSuggestions(prev => ({ ...prev, [field]: true }));
+        setShowSuggestions(prev => ({ ...prev, [field]: matchingSuggestions.length > 0 }));
       } else {
         setSuggestions(prev => ({ ...prev, [field]: [] }));
         setShowSuggestions(prev => ({ ...prev, [field]: false }));
