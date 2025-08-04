@@ -868,50 +868,50 @@ function App() {
 
         {/* Enhanced Employee Modal */}
         {selectedEmployee && (
-          <div className="fixed inset-0 modal-backdrop flex items-center justify-center z-50">
-            <div className="glass-effect-dark rounded-2xl shadow-2xl p-8 m-4 max-w-5xl w-full max-h-[90vh] overflow-y-auto border-2 border-white border-opacity-20 modal-enter">
-              <div className="flex justify-between items-center mb-8">
-                <h2 className="text-3xl font-bold text-white">Employee Profile</h2>
+          <div className="fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
+            <div className="glass-effect-dark rounded-2xl shadow-2xl p-4 max-w-4xl w-full max-h-[95vh] overflow-hidden border-2 border-white border-opacity-20 modal-enter">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-white">Employee Profile</h2>
                 <button
                   onClick={() => setSelectedEmployee(null)}
-                  className="text-white hover:text-gray-300 text-3xl font-bold transition-all duration-200 hover:rotate-90"
+                  className="text-white hover:text-gray-300 text-2xl font-bold transition-all duration-200 hover:rotate-90"
                 >
                   ✕
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 overflow-hidden">
                 {/* Employee Info */}
-                <div className="glass-effect rounded-2xl p-6 border border-white border-opacity-20">
-                  <div className="text-center mb-6">
+                <div className="glass-effect rounded-xl p-4 border border-white border-opacity-20">
+                  <div className="text-center mb-4">
                     <div className="relative inline-block">
                       {selectedEmployee.image_url ? (
                         <img
                           src={selectedEmployee.image_url}
                           alt={selectedEmployee.emp_name}
-                          className="w-32 h-32 rounded-full mx-auto mb-4 object-cover shadow-xl border-4 border-white"
+                          className="w-20 h-20 rounded-full mx-auto mb-3 object-cover shadow-lg border-2 border-white"
                           onError={(e) => {
                             e.target.style.display = 'none';
                             e.target.nextSibling.style.display = 'flex';
                           }}
                         />
                       ) : null}
-                      <div className={`w-32 h-32 bg-gradient-to-br ${getEmployeeImage(selectedEmployee)} rounded-full flex items-center justify-center text-white font-bold text-4xl mx-auto mb-4 shadow-xl border-4 border-white ${selectedEmployee.image_url ? 'hidden' : ''}`}>
+                      <div className={`w-20 h-20 bg-gradient-to-br ${getEmployeeImage(selectedEmployee)} rounded-full flex items-center justify-center text-white font-bold text-2xl mx-auto mb-3 shadow-lg border-2 border-white ${selectedEmployee.image_url ? 'hidden' : ''}`}>
                         {selectedEmployee.emp_name.charAt(0)}
                       </div>
                       <button
                         onClick={() => handleImageUpload(selectedEmployee.emp_code)}
-                        className="absolute -bottom-2 -right-2 w-10 h-10 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors shadow-lg"
+                        className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors shadow-lg text-xs"
                         title="Upload/Change Image"
                       >
                         📸
                       </button>
                     </div>
-                    <h3 className="text-3xl font-bold text-gray-800 mb-2">{selectedEmployee.emp_name}</h3>
-                    <p className="text-professional-secondary font-bold text-lg">#{selectedEmployee.emp_code}</p>
+                    <h3 className="text-xl font-bold text-gray-800 mb-1">{selectedEmployee.emp_name}</h3>
+                    <p className="text-professional-secondary font-bold text-sm">#{selectedEmployee.emp_code}</p>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
                     {[
                       { label: 'Department', value: selectedEmployee.department, icon: '🏢' },
                       { label: 'Designation', value: selectedEmployee.designation, icon: '⭐' },
@@ -921,25 +921,25 @@ function App() {
                       { label: 'Email', value: selectedEmployee.email, icon: '📧' },
                       { label: 'Joining Date', value: selectedEmployee.joining_date, icon: '📅' }
                     ].filter(field => field.value).map((field, idx) => (
-                      <div key={idx} className="bg-white bg-opacity-90 p-4 rounded-xl border border-blue-200 hover:shadow-lg transition-shadow">
+                      <div key={idx} className="bg-white bg-opacity-90 p-2 rounded-lg border border-blue-200 hover:shadow-md transition-shadow">
                         <div className="flex items-center justify-between">
-                          <span className="flex items-center text-gray-700 font-medium">
-                            <span className="text-2xl mr-3">{field.icon}</span>
+                          <span className="flex items-center text-gray-700 font-medium text-sm">
+                            <span className="text-lg mr-2">{field.icon}</span>
                             {field.label}
                           </span>
-                          <span className="font-bold text-professional-primary">{field.value}</span>
+                          <span className="font-bold text-professional-primary text-sm">{field.value}</span>
                         </div>
                       </div>
                     ))}
                     
                     {selectedEmployee.reporting_manager && (
-                      <div className="bg-white bg-opacity-90 p-4 rounded-xl border border-blue-200 hover:shadow-lg transition-shadow">
+                      <div className="bg-white bg-opacity-90 p-2 rounded-lg border border-blue-200 hover:shadow-md transition-shadow">
                         <div className="flex items-center justify-between">
-                          <span className="flex items-center text-gray-700 font-medium">
-                            <span className="text-2xl mr-3">👨‍💼</span>
+                          <span className="flex items-center text-gray-700 font-medium text-sm">
+                            <span className="text-lg mr-2">👨‍💼</span>
                             Reporting Manager
                           </span>
-                          <span className="font-bold text-professional-primary">{selectedEmployee.reporting_manager}</span>
+                          <span className="font-bold text-professional-primary text-sm">{selectedEmployee.reporting_manager}</span>
                         </div>
                       </div>
                     )}
@@ -947,13 +947,13 @@ function App() {
                 </div>
 
                 {/* Today's Attendance */}
-                <div className="glass-effect rounded-2xl p-6 border border-white border-opacity-20">
-                  <h4 className="text-2xl font-bold text-gray-800 mb-6 text-center">Today's Attendance</h4>
+                <div className="glass-effect rounded-xl p-4 border border-white border-opacity-20">
+                  <h4 className="text-xl font-bold text-gray-800 mb-4 text-center">Today's Attendance</h4>
                   
                   {attendance ? (
-                    <div className="space-y-4">
-                      <div className="text-center mb-6">
-                        <div className={`inline-flex items-center px-6 py-3 rounded-full text-lg font-bold shadow-lg ${
+                    <div className="space-y-3">
+                      <div className="text-center mb-4">
+                        <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-bold shadow-lg ${
                           attendance.status === 'Present' ? 'status-present' :
                           attendance.status === 'Late' ? 'status-late' :
                           attendance.status === 'Half Day' ? 'status-half-day' :
@@ -962,7 +962,7 @@ function App() {
                           {attendance.status === 'Present' ? '✅' :
                            attendance.status === 'Late' ? '⏰' :
                            attendance.status === 'Half Day' ? '🕐' : '❌'}
-                          <span className="ml-3">{attendance.status}</span>
+                          <span className="ml-2">{attendance.status}</span>
                         </div>
                       </div>
                       
@@ -972,21 +972,21 @@ function App() {
                         { label: 'Hours Worked', value: `${attendance.hours_worked} hrs`, icon: '⏱️' },
                         { label: 'Date', value: attendance.date, icon: '📅' }
                       ].filter(item => item.value && item.value !== '').map((item, idx) => (
-                        <div key={idx} className="bg-white bg-opacity-90 p-4 rounded-xl border border-blue-200 hover:shadow-lg transition-shadow">
+                        <div key={idx} className="bg-white bg-opacity-90 p-2 rounded-lg border border-blue-200 hover:shadow-md transition-shadow">
                           <div className="flex items-center justify-between">
-                            <span className="flex items-center text-gray-700 font-medium">
-                              <span className="text-2xl mr-3">{item.icon}</span>
+                            <span className="flex items-center text-gray-700 font-medium text-sm">
+                              <span className="text-lg mr-2">{item.icon}</span>
                               {item.label}
                             </span>
-                            <span className="font-bold text-professional-primary">{item.value}</span>
+                            <span className="font-bold text-professional-primary text-sm">{item.value}</span>
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-8">
-                      <div className="skeleton-image w-16 h-16 mx-auto mb-4 rounded-full"></div>
-                      <p className="text-gray-600">Loading attendance...</p>
+                    <div className="text-center py-4">
+                      <div className="skeleton-image w-12 h-12 mx-auto mb-3 rounded-full"></div>
+                      <p className="text-gray-600 text-sm">Loading attendance...</p>
                     </div>
                   )}
                 </div>
