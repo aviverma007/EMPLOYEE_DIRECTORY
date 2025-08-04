@@ -206,6 +206,8 @@ def fetch_employee_data():
                 "location": "IFC",
                 "designation": "IT EXECUTIVE",  # Changed from grade
                 "mobile": "8929987500",
+                "email": "anirudh.verma@company.com",
+                "joining_date": "2023-03-15",
                 "reporting_manager": "CHANDAN"
             },
             {
@@ -215,6 +217,8 @@ def fetch_employee_data():
                 "location": "IFC",
                 "designation": "IT EXECUTIVE",  # Changed from grade
                 "mobile": "8929987500",
+                "email": "binay.kumar@company.com",
+                "joining_date": "2023-01-10",
                 "reporting_manager": "CHANDAN"
             },
             {
@@ -224,6 +228,8 @@ def fetch_employee_data():
                 "location": "IFC",
                 "designation": "SENIOR MANAGER",  # Changed from grade
                 "mobile": "8929987500",
+                "email": "neeraj.kalra@company.com",
+                "joining_date": "2022-08-20",
                 "reporting_manager": "NITIN GUPTA"
             },
             {
@@ -233,6 +239,8 @@ def fetch_employee_data():
                 "location": "IFC",
                 "designation": "AVP",  # Changed from grade
                 "mobile": "8929987500",
+                "email": "nitin.gupta@company.com",
+                "joining_date": "2020-05-12",
                 "reporting_manager": "HARI"
             },
             {
@@ -242,6 +250,8 @@ def fetch_employee_data():
                 "location": "IFC",
                 "designation": "SENIOR MANAGER",  # Changed from grade
                 "mobile": "8929987500",
+                "email": "chandan@company.com",
+                "joining_date": "2021-11-05",
                 "reporting_manager": "RANJEET SARKAR"
             }
         ]
