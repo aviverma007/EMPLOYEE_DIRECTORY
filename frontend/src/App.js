@@ -261,7 +261,8 @@ function App() {
     department: '',
     location: '',
     designation: '',
-    mobile: ''
+    mobile: '',
+    email: ''
   });
   const [suggestions, setSuggestions] = useState({});
   const [showSuggestions, setShowSuggestions] = useState({});
