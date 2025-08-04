@@ -67,6 +67,7 @@ class Employee(BaseModel):
     location: str
     designation: str  # Changed from grade to designation
     mobile: str
+    extension_number: Optional[str] = None
     email: Optional[str] = None
     joining_date: Optional[str] = None
     image_url: Optional[str] = None
