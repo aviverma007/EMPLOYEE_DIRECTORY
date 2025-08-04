@@ -819,6 +819,8 @@ function App() {
                           <th className="table-header">Designation</th>
                           <th className="table-header">Department</th>
                           <th className="table-header">Location</th>
+                          <th className="table-header">Email</th>
+                          <th className="table-header">Joining Date</th>
                           <th className="table-header">Actions</th>
                         </tr>
                       </thead>
