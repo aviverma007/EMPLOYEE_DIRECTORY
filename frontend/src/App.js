@@ -191,8 +191,20 @@ function App() {
       <div className="bg-white shadow-lg border-b-4 border-blue-600 mb-6">
         <div className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-center space-x-4">
-            <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold text-2xl">SW</span>
+            <div className="w-16 h-16 rounded-xl shadow-lg overflow-hidden bg-white border-2 border-blue-200">
+              <img 
+                src="https://drive.google.com/uc?export=download&id=18D6OMrrNXNleg7DglVTg325vMggq9vlc" 
+                alt="Smartworld Developers Logo" 
+                className="w-full h-full object-contain p-1"
+                onError={(e) => {
+                  // Fallback to text logo if image fails to load
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'flex';
+                }}
+              />
+              <div className="w-full h-full bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-2xl" style={{display: 'none'}}>
+                SW
+              </div>
             </div>
             <div className="text-center">
               <h1 className="text-3xl font-bold text-blue-800 mb-1">
