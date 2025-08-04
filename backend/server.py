@@ -333,7 +333,7 @@ async def search_employees(q: str = "", field: str = ""):
         # Return all employees and some sample suggestions for the field
         suggestions = []
         if field and field in ['emp_code', 'emp_name', 'department', 'location', 'designation', 'mobile', 'extension_number', 'email']:
-            # Get first 10 unique values for suggestions, but prioritize them for uniqueness
+            # Get first 10 unique values for suggestions
             field_values = set()
             for emp in employees_data:
                 if field in emp and emp[field]:
@@ -359,33 +359,48 @@ async def search_employees(q: str = "", field: str = ""):
     searchable_fields = ['emp_code', 'emp_name', 'department', 'location', 'designation', 'mobile', 'extension_number', 'email']
     
     if field and field in searchable_fields:
-        # Get unique values for dropdown suggestions with better uniqueness handling
-        field_values = set()
-        unique_matches = {}  # Track which employees have which field values
-        
-        for emp in employees_data:
-            if field in emp and emp[field]:
-                field_value = emp[field]
-                field_values.add(field_value)
-                
-                # Track the first employee for each unique field value
-                if field_value not in unique_matches:
-                    unique_matches[field_value] = emp
-        
-        # Enhanced suggestions: show both "starts with" and "contains" results
-        starts_with = [val for val in field_values if val.lower().startswith(q)]
-        contains = [val for val in field_values if q in val.lower() and not val.lower().startswith(q)]
-        
-        # Prioritize "starts with" matches, then "contains" matches
-        suggestions = sorted(starts_with) + sorted(contains)
-        suggestions = suggestions[:10]  # Limit to 10 suggestions
-        
-        # Get matching employees - but ensure we return the right ones
-        for emp in employees_data:
-            if field in emp and emp[field]:
-                field_value = emp[field].lower()
-                if q in field_value:
-                    matching_employees.append(emp)
+        # Special handling for emp_name to provide better context
+        if field == 'emp_name':
+            # For names, we want to show unique combinations to avoid confusion
+            unique_name_combinations = {}
+            for emp in employees_data:
+                if field in emp and emp[field]:
+                    name = emp[field]
+                    if q in name.lower():
+                        # Create a unique identifier that includes more context
+                        key = f"{name} (#{emp['emp_code']})"
+                        if name.lower() not in [combo.split(' (')[0].lower() for combo in unique_name_combinations.keys()]:
+                            # Only add if we haven't seen this exact name before
+                            unique_name_combinations[name] = emp
+                        matching_employees.append(emp)
+            
+            # Provide suggestions as just names but ensure matching is exact
+            field_values = set(unique_name_combinations.keys())
+            starts_with = [val for val in field_values if val.lower().startswith(q)]
+            contains = [val for val in field_values if q in val.lower() and not val.lower().startswith(q)]
+            suggestions = sorted(starts_with) + sorted(contains)
+            suggestions = suggestions[:10]
+        else:
+            # For other fields, use the normal logic
+            field_values = set()
+            for emp in employees_data:
+                if field in emp and emp[field]:
+                    field_values.add(emp[field])
+            
+            # Enhanced suggestions: show both "starts with" and "contains" results
+            starts_with = [val for val in field_values if val.lower().startswith(q)]
+            contains = [val for val in field_values if q in val.lower() and not val.lower().startswith(q)]
+            
+            # Prioritize "starts with" matches, then "contains" matches
+            suggestions = sorted(starts_with) + sorted(contains)
+            suggestions = suggestions[:10]  # Limit to 10 suggestions
+            
+            # Get all employees that match the query
+            for emp in employees_data:
+                if field in emp and emp[field]:
+                    field_value = emp[field].lower()
+                    if q in field_value:
+                        matching_employees.append(emp)
     else:
         # Global search across all fields
         for emp in employees_data:
