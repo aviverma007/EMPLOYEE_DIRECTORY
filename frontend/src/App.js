@@ -403,30 +403,8 @@ function App() {
   };
 
   const handleInputFocus = async (field) => {
-    try {
-      // Show suggestions immediately when field is focused
-      const response = await fetch(`${backendUrl}/api/employees/search?q=&field=${field}`);
-      const data = await response.json();
-      
-      if (data.suggestions && data.suggestions.length > 0) {
-        setSuggestions(prev => ({ ...prev, [field]: data.suggestions }));
-        setShowSuggestions(prev => ({ ...prev, [field]: true }));
-      }
-    } catch (error) {
-      console.error('Error fetching initial suggestions:', error);
-      // Fallback to showing field values
-      const fieldKey = field === 'emp_name' ? 'emp_names' :
-                       field === 'emp_code' ? 'emp_codes' :
-                       field === 'department' ? 'departments' :
-                       field === 'location' ? 'locations' :
-                       field === 'designation' ? 'designations' :
-                       field === 'mobile' ? 'mobiles' :
-                       'emails';
-      
-      const fieldSuggestions = fieldValues[fieldKey] || [];
-      setSuggestions(prev => ({ ...prev, [field]: fieldSuggestions.slice(0, 10) }));
-      setShowSuggestions(prev => ({ ...prev, [field]: true }));
-    }
+    // Don't show suggestions automatically on focus - only when user types
+    // This was causing the hassle mentioned by user
   };
 
   const selectSuggestion = (field, value) => {
