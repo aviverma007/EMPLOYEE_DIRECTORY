@@ -418,7 +418,7 @@ async def get_field_values():
 @app.post("/api/refresh-data")
 async def refresh_employee_data():
     """Manually refresh employee data from Google Sheets"""
-    # fetch_employee_data()  # Temporarily commented out
+    fetch_employee_data()
     return {"message": f"Data refreshed successfully. Loaded {len(employees_data)} employees."}
 
 if __name__ == "__main__":
