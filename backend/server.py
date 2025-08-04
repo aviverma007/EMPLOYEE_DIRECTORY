@@ -45,7 +45,7 @@ SHEETS_CSV_URL = "https://docs.google.com/spreadsheets/d/1z5MgsofbAdxCBlNY2wg1FB
 # In-memory storage for employee data
 employees_data = []
 
-# Updated Column mapping - changed grade to designation
+# Updated Column mapping - changed grade to designation, added extension number
 COLUMN_MAPPING = {
     'EMP ID': 'emp_code',
     'EMP NAME': 'emp_name', 
@@ -53,6 +53,7 @@ COLUMN_MAPPING = {
     'LOCATION': 'location',
     'GRADE': 'designation',  # Changed from 'grade' to 'designation'
     'MOBILE': 'mobile',
+    'EXTENSION NUMBER': 'extension_number',
     'EMAIL': 'email',
     'JOINING DATE': 'joining_date',
     'IMAGE': 'image_url',
