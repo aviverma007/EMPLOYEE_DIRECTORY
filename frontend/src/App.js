@@ -312,30 +312,19 @@ function App() {
   };
 
   const fetchAllEmployees = async () => {
-    console.log('fetchAllEmployees started');
-    console.log('Backend URL:', backendUrl);
     try {
-      console.log('Making API call to:', `${backendUrl}/api/employees`);
       const response = await fetch(`${backendUrl}/api/employees`);
-      console.log('API response status:', response.status);
-      console.log('API response ok:', response.ok);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
-      console.log('API response data:', data);
-      console.log('Number of employees received:', data.employees?.length || 0);
-      
       setEmployees(data.employees);
       setFilteredEmployees([]);
       setLoading(false);
-      console.log('fetchAllEmployees completed successfully');
     } catch (error) {
       console.error('Error fetching employees:', error);
-      console.error('Error details:', error.message);
-      console.error('Error stack:', error.stack);
       showToast('Failed to load employees', 'error');
       setLoading(false);
     }
