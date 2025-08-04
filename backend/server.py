@@ -228,7 +228,7 @@ def generate_today_attendance(emp_code: str, emp_name: str) -> AttendanceRecord:
 @app.on_event("startup")
 async def startup_event():
     """Load employee data on startup"""
-    fetch_employee_data()
+    # fetch_employee_data()  # Temporarily commented out
 
 @app.get("/api/employees")
 async def get_all_employees():
