@@ -421,6 +421,87 @@ async def refresh_employee_data():
     fetch_employee_data()
     return {"message": f"Data refreshed successfully. Loaded {len(employees_data)} employees."}
 
+@app.post("/api/employees/{emp_code}/image")
+async def upload_employee_image(emp_code: str, file: UploadFile = File(...)):
+    """Upload employee image"""
+    # Check if employee exists
+    employee = None
+    for emp in employees_data:
+        if emp['emp_code'] == emp_code:
+            employee = emp
+            break
+    
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    try:
+        # Read file content
+        file_content = await file.read()
+        
+        # Validate image
+        is_valid, message = validate_image(file_content)
+        if not is_valid:
+            raise HTTPException(status_code=400, detail=message)
+        
+        # Convert to base64
+        image_base64 = base64.b64encode(file_content).decode('utf-8')
+        
+        # Save to database
+        success = save_employee_image_to_db(emp_code, image_base64, file.content_type)
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to save image to database")
+        
+        # Return success response
+        image_url = f"data:{file.content_type};base64,{image_base64}"
+        return ImageUploadResponse(
+            success=True,
+            message="Image uploaded successfully",
+            image_url=image_url
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
+
+@app.get("/api/employees/{emp_code}/image")
+async def get_employee_image(emp_code: str):
+    """Get employee image"""
+    # Check if employee exists
+    employee = None
+    for emp in employees_data:
+        if emp['emp_code'] == emp_code:
+            employee = emp
+            break
+    
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    image_url = get_employee_image_from_db(emp_code)
+    if not image_url:
+        raise HTTPException(status_code=404, detail="Image not found")
+    
+    return {"image_url": image_url}
+
+@app.delete("/api/employees/{emp_code}/image")
+async def delete_employee_image(emp_code: str):
+    """Delete employee image"""
+    # Check if employee exists
+    employee = None
+    for emp in employees_data:
+        if emp['emp_code'] == emp_code:
+            employee = emp
+            break
+    
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    success = delete_employee_image_from_db(emp_code)
+    if not success:
+        raise HTTPException(status_code=404, detail="Image not found")
+    
+    return {"success": True, "message": "Image deleted successfully"}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
