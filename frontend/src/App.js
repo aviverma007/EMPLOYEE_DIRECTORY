@@ -924,8 +924,10 @@ function App() {
                       { label: 'Department', value: selectedEmployee.department, icon: '🏢' },
                       { label: 'Designation', value: selectedEmployee.designation, icon: '⭐' },
                       { label: 'Location', value: selectedEmployee.location, icon: '📍' },
-                      { label: 'Mobile', value: selectedEmployee.mobile, icon: '📱' }
-                    ].map((field, idx) => (
+                      { label: 'Mobile', value: selectedEmployee.mobile, icon: '📱' },
+                      { label: 'Email', value: selectedEmployee.email, icon: '📧' },
+                      { label: 'Joining Date', value: selectedEmployee.joining_date, icon: '📅' }
+                    ].filter(field => field.value).map((field, idx) => (
                       <div key={idx} className="bg-white bg-opacity-90 p-4 rounded-xl border border-blue-200 hover:shadow-lg transition-shadow">
                         <div className="flex items-center justify-between">
                           <span className="flex items-center text-gray-700 font-medium">
