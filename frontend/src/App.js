@@ -193,14 +193,31 @@ function App() {
           <div className="flex items-center justify-center space-x-4">
             <div className="w-16 h-16 rounded-xl shadow-lg overflow-hidden bg-white border-2 border-blue-200">
               <img 
-                src="https://drive.google.com/uc?export=download&id=18D6OMrrNXNleg7DglVTg325vMggq9vlc" 
+                src="https://drive.google.com/uc?id=18D6OMrrNXNleg7DglVTg325vMggq9vlc" 
                 alt="Smartworld Developers Logo" 
                 className="w-full h-full object-contain p-1"
                 onError={(e) => {
-                  // Fallback to text logo if image fails to load
-                  e.target.style.display = 'none';
-                  e.target.nextSibling.style.display = 'flex';
+                  console.log('Primary logo failed, trying alternative...');
+                  // Try alternative formats
+                  const altUrls = [
+                    'https://drive.google.com/uc?export=view&id=18D6OMrrNXNleg7DglVTg325vMggq9vlc',
+                    'https://drive.google.com/thumbnail?id=18D6OMrrNXNleg7DglVTg325vMggq9vlc&sz=w200-h200',
+                    'https://lh3.googleusercontent.com/d/18D6OMrrNXNleg7DglVTg325vMggq9vlc'
+                  ];
+                  
+                  const tryNextUrl = () => {
+                    if (altUrls.length > 0) {
+                      e.target.src = altUrls.shift();
+                      e.target.onerror = tryNextUrl;
+                    } else {
+                      // All URLs failed, show fallback
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }
+                  };
+                  tryNextUrl();
                 }}
+                onLoad={() => console.log('Logo loaded successfully!')}
               />
               <div className="w-full h-full bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-2xl" style={{display: 'none'}}>
                 SW
