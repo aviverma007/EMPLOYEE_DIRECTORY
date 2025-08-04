@@ -461,6 +461,7 @@ function App() {
       location: '',
       designation: '',
       mobile: '',
+      extension_number: '',
       email: ''
     });
     setFilteredEmployees([]);
