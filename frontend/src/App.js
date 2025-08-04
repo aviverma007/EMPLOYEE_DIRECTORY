@@ -355,7 +355,67 @@ function App() {
     const newSearchFields = { ...searchFields, [field]: value };
     setSearchFields(newSearchFields);
 
-    if (value.length > 0) {
+    try {
+      // Use the enhanced backend API for better suggestions
+      const response = await fetch(`${backendUrl}/api/employees/search?q=${encodeURIComponent(value)}&field=${field}`);
+      const data = await response.json();
+      
+      if (data.suggestions && data.suggestions.length > 0) {
+        setSuggestions(prev => ({ ...prev, [field]: data.suggestions }));
+        setShowSuggestions(prev => ({ ...prev, [field]: true }));
+      } else {
+        setSuggestions(prev => ({ ...prev, [field]: [] }));
+        setShowSuggestions(prev => ({ ...prev, [field]: false }));
+      }
+      
+      // Update the filtered employees with the search results
+      if (value.length > 0) {
+        setFilteredEmployees(data.employees || []);
+      } else {
+        // Apply existing filters when input is cleared
+        applyFilters(newSearchFields);
+      }
+    } catch (error) {
+      console.error('Error fetching search suggestions:', error);
+      // Fallback to local filtering
+      if (value.length > 0) {
+        const fieldKey = field === 'emp_name' ? 'emp_names' :
+                         field === 'emp_code' ? 'emp_codes' :
+                         field === 'department' ? 'departments' :
+                         field === 'location' ? 'locations' :
+                         field === 'designation' ? 'designations' :
+                         field === 'mobile' ? 'mobiles' :
+                         'emails';
+        
+        const fieldSuggestions = fieldValues[fieldKey] || [];
+        const matchingSuggestions = fieldSuggestions.filter(item => 
+          item.toLowerCase().includes(value.toLowerCase())
+        ).slice(0, 6);
+        
+        setSuggestions(prev => ({ ...prev, [field]: matchingSuggestions }));
+        setShowSuggestions(prev => ({ ...prev, [field]: true }));
+      } else {
+        setSuggestions(prev => ({ ...prev, [field]: [] }));
+        setShowSuggestions(prev => ({ ...prev, [field]: false }));
+      }
+      
+      applyFilters(newSearchFields);
+    }
+  };
+
+  const handleInputFocus = async (field) => {
+    try {
+      // Show suggestions immediately when field is focused
+      const response = await fetch(`${backendUrl}/api/employees/search?q=&field=${field}`);
+      const data = await response.json();
+      
+      if (data.suggestions && data.suggestions.length > 0) {
+        setSuggestions(prev => ({ ...prev, [field]: data.suggestions }));
+        setShowSuggestions(prev => ({ ...prev, [field]: true }));
+      }
+    } catch (error) {
+      console.error('Error fetching initial suggestions:', error);
+      // Fallback to showing field values
       const fieldKey = field === 'emp_name' ? 'emp_names' :
                        field === 'emp_code' ? 'emp_codes' :
                        field === 'department' ? 'departments' :
@@ -365,18 +425,9 @@ function App() {
                        'emails';
       
       const fieldSuggestions = fieldValues[fieldKey] || [];
-      const matchingSuggestions = fieldSuggestions.filter(item => 
-        item.toLowerCase().includes(value.toLowerCase())
-      ).slice(0, 6);
-      
-      setSuggestions(prev => ({ ...prev, [field]: matchingSuggestions }));
+      setSuggestions(prev => ({ ...prev, [field]: fieldSuggestions.slice(0, 10) }));
       setShowSuggestions(prev => ({ ...prev, [field]: true }));
-    } else {
-      setSuggestions(prev => ({ ...prev, [field]: [] }));
-      setShowSuggestions(prev => ({ ...prev, [field]: false }));
     }
-
-    applyFilters(newSearchFields);
   };
 
   const selectSuggestion = (field, value) => {
