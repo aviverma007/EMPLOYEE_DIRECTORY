@@ -333,7 +333,7 @@ async def search_employees(q: str = "", field: str = ""):
         # Return all employees and some sample suggestions for the field
         suggestions = []
         if field and field in ['emp_code', 'emp_name', 'department', 'location', 'designation', 'mobile', 'extension_number', 'email']:
-            # Get first 10 unique values for suggestions
+            # Get first 10 unique values for suggestions, but prioritize them for uniqueness
             field_values = set()
             for emp in employees_data:
                 if field in emp and emp[field]:
@@ -359,11 +359,18 @@ async def search_employees(q: str = "", field: str = ""):
     searchable_fields = ['emp_code', 'emp_name', 'department', 'location', 'designation', 'mobile', 'extension_number', 'email']
     
     if field and field in searchable_fields:
-        # Get unique values for dropdown suggestions
+        # Get unique values for dropdown suggestions with better uniqueness handling
         field_values = set()
+        unique_matches = {}  # Track which employees have which field values
+        
         for emp in employees_data:
             if field in emp and emp[field]:
-                field_values.add(emp[field])
+                field_value = emp[field]
+                field_values.add(field_value)
+                
+                # Track the first employee for each unique field value
+                if field_value not in unique_matches:
+                    unique_matches[field_value] = emp
         
         # Enhanced suggestions: show both "starts with" and "contains" results
         starts_with = [val for val in field_values if val.lower().startswith(q)]
@@ -373,11 +380,11 @@ async def search_employees(q: str = "", field: str = ""):
         suggestions = sorted(starts_with) + sorted(contains)
         suggestions = suggestions[:10]  # Limit to 10 suggestions
         
-        # Get all employees that match the query (both starts with and contains)
+        # Get matching employees - but ensure we return the right ones
         for emp in employees_data:
             if field in emp and emp[field]:
                 field_value = emp[field].lower()
-                if q in field_value:  # This includes both starts with and contains
+                if q in field_value:
                     matching_employees.append(emp)
     else:
         # Global search across all fields
