@@ -21,6 +21,19 @@ const Toast = ({ message, type, onClose }) => {
   );
 };
 
+// Theme Toggle Component
+const ThemeToggle = ({ darkMode, toggleTheme }) => {
+  return (
+    <button
+      onClick={toggleTheme}
+      className="theme-toggle"
+      title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+    >
+      {darkMode ? '☀️' : '🌙'}
+    </button>
+  );
+};
+
 // Image Upload Component
 const ImageUpload = ({ employeeCode, currentImage, onImageUpdate, onClose }) => {
   const [dragActive, setDragActive] = useState(false);
