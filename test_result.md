@@ -414,7 +414,7 @@ backend:
         agent: "testing"
         comment: "✅ TESTED: Enhanced employee API working perfectly. GET /api/employees now includes image_url field for employees with uploaded images. Base64 format validation confirmed. Response structure maintained with all required fields. Employees without images don't have image_url field (as expected)."
 
-  - task: "MongoDB integration for images"
+  - task: "Extension number field integration"
     implemented: true
     working: true
     file: "/app/backend/server.py"
@@ -424,10 +424,10 @@ backend:
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Implemented MongoDB integration with employee_images collection for storing base64 image data"
+        comment: "Added extension_number field to Employee model, COLUMN_MAPPING, search/filter endpoints, and field-values API"
       - working: true
         agent: "testing"
-        comment: "✅ TESTED: MongoDB integration working perfectly. Images stored in employee_images collection with proper document structure (emp_code, image_data, image_type, uploaded_at). Database connection successful. CRUD operations (create, read, delete) all working. Fixed MongoDB collection boolean check issue for proper error handling."
+        comment: "✅ TESTED: Extension number field integration working perfectly. All 4 test areas passed: 1) /api/employees endpoint includes extension_number field for all 642 employees with proper values (e.g., emp 81096 has extension 6857, emp 80957 has extension 0). 2) /api/employees/search endpoint supports extension_number field search with suggestions and filtering - tested with real extension numbers like 6606 (7 employees), partial searches work correctly. 3) /api/employees/filter endpoint supports extension_number parameter filtering with exact matches and multi-field combinations. 4) /api/field-values endpoint includes extension_numbers array with 73 unique extension numbers, consistent with employee data. Extension number functionality is production-ready!"
 
 frontend:
   - task: "Search interface with 6 filter fields"
