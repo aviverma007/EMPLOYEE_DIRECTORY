@@ -497,14 +497,15 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center">
-        <div className="text-center bg-white rounded-2xl p-8 shadow-2xl border-2 border-blue-100 glass-effect">
+      <div className={`min-h-screen flex items-center justify-center transition-colors duration-300 ${darkMode ? 'dark bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-white'}`}>
+        <ThemeToggle darkMode={darkMode} toggleTheme={toggleTheme} />
+        <div className="text-center bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-2xl border-2 border-blue-100 dark:border-gray-600 glass-effect">
           <div className="skeleton-image w-16 h-16 mx-auto mb-4 rounded-full"></div>
-          <p className="text-blue-800 text-xl font-semibold animate-pulse">Loading Employee Directory...</p>
+          <p className="text-blue-800 dark:text-blue-200 text-xl font-semibold animate-pulse">Loading Employee Directory...</p>
           <div className="mt-4 flex justify-center space-x-1">
-            <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{animationDelay: '0ms'}}></div>
-            <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{animationDelay: '150ms'}}></div>
-            <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{animationDelay: '300ms'}}></div>
+            <div className="w-2 h-2 bg-blue-600 dark:bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '0ms'}}></div>
+            <div className="w-2 h-2 bg-blue-600 dark:bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '150ms'}}></div>
+            <div className="w-2 h-2 bg-blue-600 dark:bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '300ms'}}></div>
           </div>
         </div>
       </div>
