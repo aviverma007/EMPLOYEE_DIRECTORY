@@ -24,6 +24,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# MongoDB connection
+MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+DB_NAME = os.environ.get('DB_NAME', 'employee_directory')
+
+try:
+    client = MongoClient(MONGO_URL)
+    db = client[DB_NAME]
+    employees_collection = db.employees
+    images_collection = db.employee_images
+    print(f"✅ Connected to MongoDB: {DB_NAME}")
+except Exception as e:
+    print(f"❌ MongoDB connection failed: {e}")
+    client = None
+    db = None
+
 # Google Sheets CSV URL
 SHEETS_CSV_URL = "https://docs.google.com/spreadsheets/d/1z5MgsofbAdxCBlNY2wg1FBLap8lu-yk9/export?format=csv"
 
