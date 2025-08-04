@@ -219,9 +219,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Google Sheets CSV integration"
-    - "Employee search and filtering API endpoints"  
-    - "Attendance generation system"
+    - "Frontend integration testing (if needed)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
