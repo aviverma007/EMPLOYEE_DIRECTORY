@@ -512,7 +512,10 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
+    <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'dark bg-gray-900' : 'bg-gradient-to-br from-blue-50 via-white to-blue-50'}`}>
+      {/* Theme Toggle */}
+      <ThemeToggle darkMode={darkMode} toggleTheme={toggleTheme} />
+      
       {/* Toast Notifications */}
       {toast && (
         <Toast
