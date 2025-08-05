@@ -164,8 +164,110 @@ def delete_employee_image_from_db(emp_code: str) -> bool:
         print(f"Error deleting image for {emp_code}: {e}")
         return False
 
+def fetch_excel_data(file_path: str = None):
+    """Fetch employee data from Excel file"""
+    global employees_data
+    
+    if file_path is None:
+        file_path = EXCEL_FILE_PATH
+    
+    try:
+        # Check if file exists
+        if not os.path.exists(file_path):
+            print(f"Excel file not found: {file_path}")
+            return False
+        
+        # Read Excel file
+        df = pd.read_excel(file_path, engine='openpyxl')
+        
+        # Convert DataFrame to list of dictionaries
+        employees_data = []
+        
+        for _, row in df.iterrows():
+            employee = {}
+            
+            # Map columns to our schema
+            for excel_col, internal_field in COLUMN_MAPPING.items():
+                if excel_col in df.columns:
+                    value = row[excel_col]
+                    # Handle NaN values
+                    if pd.isna(value):
+                        employee[internal_field] = ""
+                    else:
+                        employee[internal_field] = str(value).strip()
+            
+            # Ensure all required fields exist
+            required_fields = ['emp_code', 'emp_name', 'department', 'location', 'designation', 'mobile']
+            if all(field in employee and employee[field] for field in required_fields):
+                employees_data.append(employee)
+        
+        print(f"Loaded {len(employees_data)} employees from Excel file: {file_path}")
+        return True
+        
+    except Exception as e:
+        print(f"Error reading Excel file: {e}")
+        return False
+
 def fetch_employee_data():
-    """Fetch employee data from Google Sheets"""
+    """Fetch employee data based on configured data source"""
+    global employees_data
+    
+    if DATA_SOURCE == 'excel':
+        if fetch_excel_data():
+            return
+    elif DATA_SOURCE == 'sheets':
+        if fetch_sheets_data():
+            return
+    
+    # Fallback to sample data if all sources fail
+    print("Using fallback sample data")
+    use_sample_data()
+
+def fetch_sheets_data():
+    """Fetch employee data from Google Sheets (original implementation)"""
+    global employees_data
+    try:
+        response = requests.get(SHEETS_CSV_URL)
+        response.raise_for_status()
+        
+        # Parse CSV data
+        csv_data = response.text.strip()
+        lines = csv_data.split('\n')
+        
+        if not lines:
+            return False
+        
+        # Get headers
+        headers = [h.strip() for h in lines[0].split(',')]
+        employees_data = []
+        
+        # Process each row
+        for line in lines[1:]:
+            if not line.strip():
+                continue
+                
+            values = [v.strip() for v in line.split(',')]
+            employee = {}
+            
+            # Map columns to our schema
+            for i, header in enumerate(headers):
+                if i < len(values) and header in COLUMN_MAPPING:
+                    employee[COLUMN_MAPPING[header]] = values[i]
+            
+            # Ensure all required fields exist
+            required_fields = ['emp_code', 'emp_name', 'department', 'location', 'designation', 'mobile']
+            if all(field in employee for field in required_fields):
+                employees_data.append(employee)
+                
+        print(f"Loaded {len(employees_data)} employees from Google Sheets")
+        return True
+        
+    except Exception as e:
+        print(f"Error fetching Google Sheets data: {e}")
+        return False
+
+def use_sample_data():
+    """Use sample data as fallback"""
     global employees_data
     try:
         response = requests.get(SHEETS_CSV_URL)
