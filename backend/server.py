@@ -89,6 +89,13 @@ class ImageUploadResponse(BaseModel):
     message: str
     image_url: Optional[str] = None
 
+class HierarchyStructure(BaseModel):
+    hierarchy_id: str
+    name: str
+    structure: Dict  # The hierarchy structure data
+    created_at: str
+    updated_at: str
+
 class AttendanceRecord(BaseModel):
     emp_code: str
     emp_name: str
