@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Employee Directory with Google Sheets connectivity, 6 search fields with dropdowns, card/list view toggle, department filtering, and attendance display + Image Upload Feature for Employees + Enhanced Dynamic CSS Features"
+user_problem_statement: "Employee Directory with Google Sheets connectivity, 6 search fields with dropdowns (emp_code, emp_name, department, location, designation, mobile), card/list view toggle, department filtering, and attendance display + Image Upload Feature for Employees + Enhanced Dynamic CSS Features - Extension number and email removed from search panel"
 
 backend:
   - task: "Google Sheets CSV integration"
