@@ -635,16 +635,19 @@ async def upload_excel_file(file: UploadFile = File(...)):
 @app.get("/api/data-source-info")
 async def get_data_source_info():
     """Get information about current data source"""
+    current_data_source = os.environ.get('DATA_SOURCE', 'sheets')
+    current_excel_path = os.environ.get('EXCEL_FILE_PATH', '/app/data/employees.xlsx')
+    
     info = {
-        "data_source": DATA_SOURCE,
+        "data_source": current_data_source,
         "employees_count": len(employees_data),
         "last_updated": datetime.now().isoformat()
     }
     
-    if DATA_SOURCE == 'excel':
-        info["excel_file_path"] = EXCEL_FILE_PATH
-        info["file_exists"] = os.path.exists(EXCEL_FILE_PATH)
-    elif DATA_SOURCE == 'sheets':
+    if current_data_source == 'excel':
+        info["excel_file_path"] = current_excel_path
+        info["file_exists"] = os.path.exists(current_excel_path)
+    elif current_data_source == 'sheets':
         info["sheets_url"] = SHEETS_CSV_URL
     
     return info
