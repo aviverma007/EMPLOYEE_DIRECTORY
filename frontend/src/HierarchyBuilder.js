@@ -136,57 +136,107 @@ const HierarchyBuilder = ({ employees }) => {
      emp.department.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+  const [expandedNodes, setExpandedNodes] = useState(new Set());
+
+  const toggleNodeExpansion = (nodeId) => {
+    const newExpanded = new Set(expandedNodes);
+    if (newExpanded.has(nodeId)) {
+      newExpanded.delete(nodeId);
+    } else {
+      newExpanded.add(nodeId);
+    }
+    setExpandedNodes(newExpanded);
+  };
+
   const renderOrgChart = () => {
     const rootEmployees = hierarchyData.filter(emp => emp.level === 0);
     
-    const renderEmployeeNode = (employee) => (
-      <div key={employee.id} className="org-chart-node">
-        <div className="org-chart-card">
-          <div className="employee-avatar">
-            {employee.image_url ? (
-              <img src={employee.image_url} alt={employee.emp_name} className="avatar-img" />
-            ) : (
-              <div className="avatar-placeholder">
-                {employee.emp_name.charAt(0)}
-              </div>
-            )}
-          </div>
-          <div className="employee-info">
-            <h4>{employee.emp_name}</h4>
-            <p className="employee-code">#{employee.emp_code}</p>
-            <p className="employee-designation">{employee.designation}</p>
-            <p className="employee-department">{employee.department}</p>
-          </div>
-          <button 
-            onClick={() => removeEmployeeFromHierarchy(employee.id)}
-            className="remove-btn"
-          >
-            ✕
-          </button>
-        </div>
-        
-        {employee.directReports && employee.directReports.length > 0 && (
-          <div className="org-chart-children">
-            <div className="org-chart-line"></div>
-            <div className="org-chart-children-container">
-              {employee.directReports.map(renderEmployeeNode)}
+    const renderEmployeeNode = (employee, level = 0) => {
+      const hasDirectReports = employee.directReports && employee.directReports.length > 0;
+      const isExpanded = expandedNodes.has(employee.id);
+      
+      return (
+        <div key={employee.id} className="org-chart-node-compact">
+          <div className="org-chart-card-compact">
+            <div className="employee-avatar-compact">
+              {employee.image_url ? (
+                <img src={employee.image_url} alt={employee.emp_name} className="avatar-img-compact" />
+              ) : (
+                <div className="avatar-placeholder-compact">
+                  {employee.emp_name.charAt(0)}
+                </div>
+              )}
+            </div>
+            <div className="employee-info-compact">
+              <h4>{employee.emp_name}</h4>
+              <p className="employee-code-compact">#{employee.emp_code}</p>
+              <p className="employee-designation-compact">{employee.designation}</p>
+              <p className="employee-department-compact">{employee.department}</p>
+            </div>
+            
+            <div className="card-actions">
+              {hasDirectReports && (
+                <button 
+                  onClick={() => toggleNodeExpansion(employee.id)}
+                  className="expand-btn"
+                  title={isExpanded ? 'Collapse' : 'Expand'}
+                >
+                  {isExpanded ? '▼' : '▶'}
+                  <span className="reports-count-badge">{employee.directReports.length}</span>
+                </button>
+              )}
+              <button 
+                onClick={() => removeEmployeeFromHierarchy(employee.id)}
+                className="remove-btn-compact"
+                title="Remove from hierarchy"
+              >
+                ✕
+              </button>
             </div>
           </div>
-        )}
-      </div>
-    );
+          
+          {hasDirectReports && isExpanded && (
+            <div className="org-chart-children-compact">
+              <div className="org-chart-line-compact"></div>
+              <div className="org-chart-children-container-compact">
+                {employee.directReports.map(report => renderEmployeeNode(report, level + 1))}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    };
 
     return (
-      <div className="org-chart-container">
+      <div className="org-chart-container-compact">
         {rootEmployees.length === 0 ? (
           <div className="empty-org-chart">
-            <div className="text-6xl mb-4">🌳</div>
+            <div className="text-4xl mb-4">🌳</div>
             <h3>No Hierarchy Created</h3>
             <p>Start building your organization chart by adding employees from the left panel</p>
           </div>
         ) : (
-          <div className="org-chart">
-            {rootEmployees.map(renderEmployeeNode)}
+          <div className="org-chart-compact">
+            <div className="org-chart-header">
+              <h3>Organization Structure</h3>
+              <div className="chart-controls">
+                <button 
+                  onClick={() => setExpandedNodes(new Set(hierarchyData.map(emp => emp.id)))}
+                  className="control-btn"
+                >
+                  ⬇ Expand All
+                </button>
+                <button 
+                  onClick={() => setExpandedNodes(new Set())}
+                  className="control-btn"
+                >
+                  ⬆ Collapse All
+                </button>
+              </div>
+            </div>
+            <div className="org-chart-grid">
+              {rootEmployees.map(employee => renderEmployeeNode(employee))}
+            </div>
           </div>
         )}
       </div>
