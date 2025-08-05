@@ -471,9 +471,7 @@ function App() {
       department: '',
       location: '',
       designation: '',
-      mobile: '',
-      extension_number: '',
-      email: ''
+      mobile: ''
     });
     setFilteredEmployees([]);
     setSuggestions({});
