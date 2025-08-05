@@ -742,13 +742,6 @@ function App() {
               >
                 🔄 Refresh Data
               </button>
-              <button
-                onClick={() => setShowExcelUpload(true)}
-                className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium text-sm shadow-md"
-                title="Upload Excel file"
-              >
-                📊 Upload Excel
-              </button>
               <div className="flex items-center px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm">
                 <span className="text-gray-600 dark:text-gray-300 mr-2">Source:</span>
                 <span className={`font-medium ${dataSource === 'excel' ? 'text-blue-600' : 'text-green-600'}`}>
