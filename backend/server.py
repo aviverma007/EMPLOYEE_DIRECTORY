@@ -590,8 +590,9 @@ async def get_field_values():
 @app.post("/api/refresh-data")
 async def refresh_employee_data():
     """Manually refresh employee data from configured source"""
+    current_data_source = os.environ.get('DATA_SOURCE', 'sheets')
     fetch_employee_data()
-    return {"message": f"Data refreshed successfully. Loaded {len(employees_data)} employees.", "source": DATA_SOURCE}
+    return {"message": f"Data refreshed successfully. Loaded {len(employees_data)} employees.", "source": current_data_source}
 
 @app.post("/api/upload-excel")
 async def upload_excel_file(file: UploadFile = File(...)):
