@@ -25,6 +25,108 @@ const HierarchyBuilder = ({ employees }) => {
   // Backend URL
   const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
+  // Load saved hierarchies on component mount
+  useEffect(() => {
+    loadSavedHierarchies();
+  }, []);
+
+  const loadSavedHierarchies = async () => {
+    try {
+      const response = await fetch(`${backendUrl}/api/hierarchy/list`);
+      if (response.ok) {
+        const data = await response.json();
+        setSavedHierarchies(data.hierarchies || []);
+      }
+    } catch (error) {
+      console.error('Error loading saved hierarchies:', error);
+    }
+  };
+
+  const saveCurrentHierarchy = async () => {
+    if (!hierarchyName.trim()) {
+      alert('Please enter a name for the hierarchy');
+      return;
+    }
+
+    const hierarchyToSave = {
+      id: currentHierarchyId || undefined,
+      name: hierarchyName,
+      structure: {
+        hierarchyData: hierarchyData,
+        expandedNodes: Array.from(expandedNodes)
+      }
+    };
+
+    try {
+      const response = await fetch(`${backendUrl}/api/hierarchy/save`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(hierarchyToSave)
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setCurrentHierarchyId(result.hierarchy_id);
+        setShowSaveDialog(false);
+        loadSavedHierarchies(); // Refresh the list
+        alert('Hierarchy saved successfully!');
+      } else {
+        alert('Failed to save hierarchy');
+      }
+    } catch (error) {
+      console.error('Error saving hierarchy:', error);
+      alert('Error saving hierarchy');
+    }
+  };
+
+  const loadHierarchy = async (hierarchyId) => {
+    try {
+      const response = await fetch(`${backendUrl}/api/hierarchy/${hierarchyId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setHierarchyData(data.structure.hierarchyData || []);
+        setExpandedNodes(new Set(data.structure.expandedNodes || []));
+        setCurrentHierarchyId(data.hierarchy_id);
+        setHierarchyName(data.name);
+        setShowLoadDialog(false);
+        alert(`Hierarchy "${data.name}" loaded successfully!`);
+      } else {
+        alert('Failed to load hierarchy');
+      }
+    } catch (error) {
+      console.error('Error loading hierarchy:', error);
+      alert('Error loading hierarchy');
+    }
+  };
+
+  const deleteHierarchy = async (hierarchyId) => {
+    if (!window.confirm('Are you sure you want to delete this hierarchy?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${backendUrl}/api/hierarchy/${hierarchyId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        loadSavedHierarchies(); // Refresh the list
+        if (currentHierarchyId === hierarchyId) {
+          setCurrentHierarchyId(null);
+          setHierarchyName('');
+        }
+        alert('Hierarchy deleted successfully!');
+      } else {
+        alert('Failed to delete hierarchy');
+      }
+    } catch (error) {
+      console.error('Error deleting hierarchy:', error);
+      alert('Error deleting hierarchy');
+    }
+  };
+
   useEffect(() => {
     if (selectedDepartment) {
       // Get employees in selected department
