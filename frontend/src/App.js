@@ -1091,6 +1091,20 @@ function App() {
             onClose={() => setShowImageUpload(false)}
           />
         )}
+        </>
+        ) : (
+          /* Hierarchy Builder Content */
+          <HierarchyBuilder 
+            employees={employees}
+            selectedDepartment={selectedDepartment}
+            departmentHeads={departmentHeads}
+            selectedHead={selectedHead}
+            hierarchyData={hierarchyData}
+            onDepartmentChange={handleDepartmentChange}
+            onHeadSelection={handleHeadSelection}
+            getDepartments={getDepartments}
+          />
+        )}
       </div>
 
       {/* Floating Action Button */}
