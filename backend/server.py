@@ -42,6 +42,7 @@ except Exception as e:
     print(f"❌ MongoDB connection failed: {e}")
     client = None
     db = None
+    hierarchies_collection = None
 
 # Configuration for data sources
 SHEETS_CSV_URL = os.environ.get('SHEETS_CSV_URL', "https://docs.google.com/spreadsheets/d/1z5MgsofbAdxCBlNY2wg1FBLap8lu-yk9/export?format=csv")
