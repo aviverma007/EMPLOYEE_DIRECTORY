@@ -180,6 +180,109 @@ const HierarchyBuilder = ({ employees }) => {
     setExpandedNodes(newExpanded);
   };
 
+  const renderHierarchyBuilder = () => (
+    <div className="hierarchy-builder-manual">
+      <div className="manual-builder-header">
+        <h3>🏗️ Build Organization Hierarchy</h3>
+        <button 
+          onClick={clearAllHierarchy}
+          className="clear-all-btn"
+        >
+          🗑️ Clear All
+        </button>
+      </div>
+
+      <div className="manual-builder-form">
+        {/* Department Selection */}
+        <div className="form-group">
+          <label>1. Select Department:</label>
+          <select 
+            value={selectedDepartment}
+            onChange={(e) => setSelectedDepartment(e.target.value)}
+            className="hierarchy-select"
+          >
+            <option value="">Choose Department...</option>
+            {departments.map(dept => (
+              <option key={dept} value={dept}>{dept}</option>
+            ))}
+          </select>
+        </div>
+
+        {selectedDepartment && (
+          <>
+            {/* Manager Selection */}
+            <div className="form-group">
+              <label>2. Select Manager:</label>
+              <select 
+                value={selectedManager}
+                onChange={(e) => setSelectedManager(e.target.value)}
+                className="hierarchy-select"
+              >
+                <option value="">Choose Manager...</option>
+                {availableManagers.map(emp => (
+                  <option key={emp.emp_code} value={emp.emp_code}>
+                    {emp.emp_name} (#{emp.emp_code}) - {emp.designation}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {selectedManager && (
+              <>
+                {/* Subordinate Selection */}
+                <div className="form-group">
+                  <label>3. Select Who Reports to {availableManagers.find(e => e.emp_code === selectedManager)?.emp_name}:</label>
+                  <select 
+                    value={selectedSubordinate}
+                    onChange={(e) => setSelectedSubordinate(e.target.value)}
+                    className="hierarchy-select"
+                  >
+                    <option value="">Choose Subordinate...</option>
+                    {availableSubordinates.map(emp => (
+                      <option key={emp.emp_code} value={emp.emp_code}>
+                        {emp.emp_name} (#{emp.emp_code}) - {emp.designation}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {selectedSubordinate && (
+                  <button 
+                    onClick={addHierarchyRelationship}
+                    className="add-relationship-btn"
+                  >
+                    ➕ Add Reporting Relationship
+                  </button>
+                )}
+              </>
+            )}
+          </>
+        )}
+      </div>
+
+      <div className="hierarchy-stats">
+        <div className="stat-item">
+          <span className="stat-label">Total Employees in Hierarchy:</span>
+          <span className="stat-value">{hierarchyData.length}</span>
+        </div>
+        <div className="stat-item">
+          <span className="stat-label">Departments:</span>
+          <span className="stat-value">{[...new Set(hierarchyData.map(h => h.department))].length}</span>
+        </div>
+      </div>
+    </div>
+  );
+
+  const toggleNodeExpansion = (nodeId) => {
+    const newExpanded = new Set(expandedNodes);
+    if (newExpanded.has(nodeId)) {
+      newExpanded.delete(nodeId);
+    } else {
+      newExpanded.add(nodeId);
+    }
+    setExpandedNodes(newExpanded);
+  };
+
   const renderOrgChart = () => {
     const rootEmployees = hierarchyData.filter(emp => emp.level === 0);
     
