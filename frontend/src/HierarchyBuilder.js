@@ -22,6 +22,9 @@ const HierarchyBuilder = ({ employees }) => {
   // Get unique departments
   const departments = [...new Set(employees.map(emp => emp.department))].sort();
 
+  // Backend URL
+  const backendUrl = process.env.REACT_APP_BACKEND_URL;
+
   useEffect(() => {
     if (selectedDepartment) {
       // Get employees in selected department
