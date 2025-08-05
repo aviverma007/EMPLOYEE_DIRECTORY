@@ -832,8 +832,6 @@ function App() {
                             </td>
                             <td className="table-cell text-gray-900">{employee.department}</td>
                             <td className="table-cell text-gray-900">{employee.location}</td>
-                            <td className="table-cell text-gray-900">{employee.extension_number || 'N/A'}</td>
-                            <td className="table-cell text-gray-900">{employee.email || 'N/A'}</td>
                             <td className="table-cell">
                               <button
                                 onClick={(e) => {
