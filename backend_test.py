@@ -31,7 +31,10 @@ class BackendTester:
             "image_retrieval_api": {"passed": False, "details": []},
             "image_deletion_api": {"passed": False, "details": []},
             "enhanced_employee_api": {"passed": False, "details": []},
-            "file_validation": {"passed": False, "details": []}
+            "file_validation": {"passed": False, "details": []},
+            "excel_upload_api": {"passed": False, "details": []},
+            "data_source_info_api": {"passed": False, "details": []},
+            "refresh_data_api": {"passed": False, "details": []}
         }
         self.session = requests.Session()
         self.session.timeout = 30
