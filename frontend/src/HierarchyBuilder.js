@@ -462,56 +462,13 @@ const HierarchyBuilder = ({ employees }) => {
 
   return (
     <div className="hierarchy-builder">
-      <div className="hierarchy-builder-content">
-        {/* Left Panel - Employee Selection */}
-        <div className="employee-selection-panel">
-          <div className="panel-header">
-            <h3>👥 Add Employees</h3>
-            <div className="search-container">
-              <input
-                type="text"
-                placeholder="Search employees..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="employee-search"
-              />
-            </div>
-          </div>
-          
-          <div className="employee-list">
-            {filteredEmployees.length === 0 ? (
-              <div className="no-employees">
-                <p>No employees available to add</p>
-              </div>
-            ) : (
-              filteredEmployees.map(employee => (
-                <div key={employee.emp_code} className="employee-item">
-                  <div className="employee-item-info">
-                    {employee.image_url ? (
-                      <img src={employee.image_url} alt={employee.emp_name} className="employee-avatar-tiny" />
-                    ) : (
-                      <div className="employee-avatar-tiny-placeholder">
-                        {employee.emp_name.charAt(0)}
-                      </div>
-                    )}
-                    <div>
-                      <div className="employee-name">{employee.emp_name}</div>
-                      <div className="employee-details">#{employee.emp_code} • {employee.department}</div>
-                    </div>
-                  </div>
-                  <button 
-                    onClick={() => addEmployeeToHierarchy(employee)}
-                    className="add-employee-btn"
-                  >
-                    + Add
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
+      <div className="hierarchy-builder-content-new">
+        {/* Top Section - Manual Hierarchy Builder */}
+        <div className="hierarchy-builder-panel">
+          {renderHierarchyBuilder()}
         </div>
 
-        {/* Right Panel - Hierarchy View */}
+        {/* Bottom Section - View Toggle and Results */}
         <div className="hierarchy-view-panel">
           <div className="panel-header">
             <h3>🏗️ Organization Hierarchy</h3>
