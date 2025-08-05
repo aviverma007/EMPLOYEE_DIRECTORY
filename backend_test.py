@@ -1102,7 +1102,10 @@ class BackendTester:
             ("Image Retrieval API", self.test_image_retrieval_api),
             ("Image Deletion API", self.test_image_deletion_api),
             ("Enhanced Employee API", self.test_enhanced_employee_api),
-            ("File Validation", self.test_file_validation)
+            ("File Validation", self.test_file_validation),
+            ("Excel Upload API", self.test_excel_upload_api),
+            ("Data Source Info API", self.test_data_source_info_api),
+            ("Refresh Data API", self.test_refresh_data_api)
         ]
         
         passed_tests = 0
