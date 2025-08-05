@@ -190,7 +190,109 @@ button:active {
   @apply flex-1 p-4 overflow-hidden;
 }
 
-/* Org Chart Styles */
+/* Compact Org Chart Styles */
+.org-chart-container-compact {
+  @apply w-full h-full overflow-auto bg-gray-50 dark:bg-gray-900 rounded-lg;
+}
+
+.org-chart-compact {
+  @apply p-4;
+}
+
+.org-chart-header {
+  @apply flex justify-between items-center mb-6 pb-4 border-b border-gray-200 dark:border-gray-600;
+}
+
+.org-chart-header h3 {
+  @apply text-lg font-bold text-gray-800 dark:text-white;
+}
+
+.chart-controls {
+  @apply flex gap-2;
+}
+
+.control-btn {
+  @apply px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors;
+}
+
+.org-chart-grid {
+  @apply flex flex-wrap gap-4 justify-center;
+}
+
+.org-chart-node-compact {
+  @apply flex flex-col items-center relative;
+}
+
+.org-chart-card-compact {
+  @apply bg-white dark:bg-gray-700 rounded-lg shadow-md border border-gray-200 dark:border-gray-600 p-3 m-1 relative min-w-40 max-w-48 hover:shadow-lg transition-all duration-300 hover:border-blue-300;
+}
+
+.employee-avatar-compact {
+  @apply w-8 h-8 mx-auto mb-2;
+}
+
+.avatar-img-compact {
+  @apply w-full h-full rounded-full object-cover border border-gray-200 shadow-sm;
+}
+
+.avatar-placeholder-compact {
+  @apply w-full h-full rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-sm;
+}
+
+.employee-info-compact {
+  @apply text-center;
+}
+
+.employee-info-compact h4 {
+  @apply font-bold text-gray-800 dark:text-white text-xs mb-1 truncate;
+}
+
+.employee-code-compact {
+  @apply text-xs text-blue-600 dark:text-blue-400 font-medium mb-1;
+}
+
+.employee-designation-compact {
+  @apply text-xs text-gray-600 dark:text-gray-300 mb-1 truncate;
+}
+
+.employee-department-compact {
+  @apply text-xs text-gray-500 dark:text-gray-400 truncate;
+}
+
+.card-actions {
+  @apply absolute -top-1 -right-1 flex gap-1;
+}
+
+.expand-btn {
+  @apply relative bg-green-500 text-white rounded-full text-xs hover:bg-green-600 transition-colors w-6 h-6 flex items-center justify-center shadow-sm;
+}
+
+.reports-count-badge {
+  @apply absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-xs w-4 h-4 flex items-center justify-center;
+}
+
+.remove-btn-compact {
+  @apply w-5 h-5 bg-red-500 text-white rounded-full text-xs hover:bg-red-600 transition-colors shadow-sm;
+}
+
+.org-chart-children-compact {
+  @apply relative mt-2;
+}
+
+.org-chart-line-compact {
+  @apply w-0.5 h-4 bg-blue-300 mx-auto relative;
+}
+
+.org-chart-line-compact::after {
+  content: '';
+  @apply absolute top-full left-1/2 transform -translate-x-1/2 w-6 h-0.5 bg-blue-300;
+}
+
+.org-chart-children-container-compact {
+  @apply flex flex-wrap gap-2 mt-2 justify-center;
+}
+
+/* Original Org Chart Styles (keeping for fallback) */
 .org-chart-container {
   @apply w-full h-full overflow-auto;
 }
