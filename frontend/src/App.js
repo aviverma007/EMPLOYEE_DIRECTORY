@@ -542,9 +542,7 @@ function App() {
     { key: 'department', label: 'Department', placeholder: 'Department', icon: '🏢' },
     { key: 'location', label: 'Location', placeholder: 'Location', icon: '📍' },
     { key: 'designation', label: 'Designation', placeholder: 'Designation', icon: '⭐' },
-    { key: 'mobile', label: 'Mobile', placeholder: 'Mobile Number', icon: '📱' },
-    { key: 'extension_number', label: 'Extension', placeholder: 'Extension Number', icon: '☎️' },
-    { key: 'email', label: 'Email', placeholder: 'Email Address', icon: '📧' }
+    { key: 'mobile', label: 'Mobile', placeholder: 'Mobile Number', icon: '📱' }
   ];
 
   const displayedEmployees = filteredEmployees;
