@@ -663,6 +663,34 @@ function App() {
         </div>
       </div>
 
+      {/* Tab Navigation */}
+      <div className="container mx-auto px-6 mb-6">
+        <div className="glass-effect rounded-professional shadow-professional p-4 border-professional">
+          <div className="flex space-x-1 bg-gray-200 dark:bg-gray-700 rounded-lg p-1">
+            <button
+              onClick={() => setCurrentTab('directory')}
+              className={`flex-1 px-6 py-3 font-medium transition-all duration-200 rounded-md ${
+                currentTab === 'directory' 
+                  ? 'bg-blue-600 text-white shadow-lg' 
+                  : 'text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
+              }`}
+            >
+              🏢 Employee Directory
+            </button>
+            <button
+              onClick={() => setCurrentTab('hierarchy')}
+              className={`flex-1 px-6 py-3 font-medium transition-all duration-200 rounded-md ${
+                currentTab === 'hierarchy' 
+                  ? 'bg-blue-600 text-white shadow-lg' 
+                  : 'text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
+              }`}
+            >
+              🌳 Hierarchy Builder
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div className="container mx-auto px-6">
         {/* Enhanced Search Section */}
         <div className="glass-effect rounded-professional shadow-professional-lg p-6 mb-6 border-professional animate-slide-up">
