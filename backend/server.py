@@ -269,101 +269,68 @@ def fetch_sheets_data():
 def use_sample_data():
     """Use sample data as fallback"""
     global employees_data
-    try:
-        response = requests.get(SHEETS_CSV_URL)
-        response.raise_for_status()
-        
-        # Parse CSV data
-        csv_data = response.text.strip()
-        lines = csv_data.split('\n')
-        
-        if not lines:
-            return
-        
-        # Get headers
-        headers = [h.strip() for h in lines[0].split(',')]
-        employees_data = []
-        
-        # Process each row
-        for line in lines[1:]:
-            if not line.strip():
-                continue
-                
-            values = [v.strip() for v in line.split(',')]
-            employee = {}
-            
-            # Map columns to our schema
-            for i, header in enumerate(headers):
-                if i < len(values) and header in COLUMN_MAPPING:
-                    employee[COLUMN_MAPPING[header]] = values[i]
-            
-            # Ensure all required fields exist (changed grade to designation, added extension_number)
-            required_fields = ['emp_code', 'emp_name', 'department', 'location', 'designation', 'mobile']
-            if all(field in employee for field in required_fields):
-                employees_data.append(employee)
-                
-        print(f"Loaded {len(employees_data)} employees from Google Sheets")
-        
-    except Exception as e:
-        print(f"Error fetching employee data: {e}")
-        # Use sample data if Google Sheets fails (changed grade to designation)
-        employees_data = [
-            {
-                "emp_code": "81096",
-                "emp_name": "ANIRUDH VERMA",
-                "department": "IT",
-                "location": "IFC",
-                "designation": "IT EXECUTIVE",  # Changed from grade
-                "mobile": "8929987500",
-                "email": "anirudh.verma@company.com",
-                "joining_date": "2023-03-15",
-                "reporting_manager": "CHANDAN"
-            },
-            {
-                "emp_code": "80957",
-                "emp_name": "BINAY KUMAR",
-                "department": "IT",
-                "location": "IFC",
-                "designation": "IT EXECUTIVE",  # Changed from grade
-                "mobile": "8929987500",
-                "email": "binay.kumar@company.com",
-                "joining_date": "2023-01-10",
-                "reporting_manager": "CHANDAN"
-            },
-            {
-                "emp_code": "80176",
-                "emp_name": "NEERAJ KALRA",
-                "department": "IT",
-                "location": "IFC",
-                "designation": "SENIOR MANAGER",  # Changed from grade
-                "mobile": "8929987500",
-                "email": "neeraj.kalra@company.com",
-                "joining_date": "2022-08-20",
-                "reporting_manager": "NITIN GUPTA"
-            },
-            {
-                "emp_code": "00001",
-                "emp_name": "NITIN GUPTA",
-                "department": "IT",
-                "location": "IFC",
-                "designation": "AVP",  # Changed from grade
-                "mobile": "8929987500",
-                "email": "nitin.gupta@company.com",
-                "joining_date": "2020-05-12",
-                "reporting_manager": "HARI"
-            },
-            {
-                "emp_code": "00002",
-                "emp_name": "CHANDAN",
-                "department": "IT",
-                "location": "IFC",
-                "designation": "SENIOR MANAGER",  # Changed from grade
-                "mobile": "8929987500",
-                "email": "chandan@company.com",
-                "joining_date": "2021-11-05",
-                "reporting_manager": "RANJEET SARKAR"
-            }
-        ]
+    employees_data = [
+        {
+            "emp_code": "81096",
+            "emp_name": "ANIRUDH VERMA",
+            "department": "IT",
+            "location": "IFC",
+            "designation": "IT EXECUTIVE",
+            "mobile": "8929987500",
+            "extension_number": "6857",
+            "email": "anirudh.verma@company.com",
+            "joining_date": "2023-03-15",
+            "reporting_manager": "CHANDAN"
+        },
+        {
+            "emp_code": "80957",
+            "emp_name": "BINAY KUMAR",
+            "department": "IT",
+            "location": "IFC",
+            "designation": "IT EXECUTIVE",
+            "mobile": "8929987500",
+            "extension_number": "0",
+            "email": "binay.kumar@company.com",
+            "joining_date": "2023-01-10",
+            "reporting_manager": "CHANDAN"
+        },
+        {
+            "emp_code": "80176",
+            "emp_name": "NEERAJ KALRA",
+            "department": "IT",
+            "location": "IFC",
+            "designation": "SENIOR MANAGER",
+            "mobile": "8929987500",
+            "extension_number": "6606",
+            "email": "neeraj.kalra@company.com",
+            "joining_date": "2022-08-20",
+            "reporting_manager": "NITIN GUPTA"
+        },
+        {
+            "emp_code": "00001",
+            "emp_name": "NITIN GUPTA",
+            "department": "IT",
+            "location": "IFC",
+            "designation": "AVP",
+            "mobile": "8929987500",
+            "extension_number": "1001",
+            "email": "nitin.gupta@company.com",
+            "joining_date": "2020-05-12",
+            "reporting_manager": "HARI"
+        },
+        {
+            "emp_code": "00002",
+            "emp_name": "CHANDAN",
+            "department": "IT",
+            "location": "IFC",
+            "designation": "SENIOR MANAGER",
+            "mobile": "8929987500",
+            "extension_number": "1002",
+            "email": "chandan@company.com",
+            "joining_date": "2021-11-05",
+            "reporting_manager": "RANJEET SARKAR"
+        }
+    ]
 
 def generate_today_attendance(emp_code: str, emp_name: str) -> AttendanceRecord:
     """Generate mock attendance data for today"""
