@@ -372,9 +372,9 @@ const HierarchyBuilder = ({ employees }) => {
     <div className="hierarchy-table-container">
       {hierarchyData.length === 0 ? (
         <div className="empty-hierarchy-table">
-          <div className="text-6xl mb-4">📊</div>
+          <div className="text-4xl mb-4">📊</div>
           <h3>No Hierarchy Data</h3>
-          <p>Add employees to build your organizational hierarchy</p>
+          <p>Use the form above to build your organizational hierarchy</p>
         </div>
       ) : (
         <div className="overflow-x-auto">
@@ -386,6 +386,7 @@ const HierarchyBuilder = ({ employees }) => {
                 <th>Code</th>
                 <th>Position</th>
                 <th>Department</th>
+                <th>Manager</th>
                 <th>Direct Reports</th>
                 <th>Actions</th>
               </tr>
@@ -393,53 +394,65 @@ const HierarchyBuilder = ({ employees }) => {
             <tbody>
               {hierarchyData
                 .sort((a, b) => a.level - b.level || a.emp_name.localeCompare(b.emp_name))
-                .map((employee, index) => (
-                  <tr key={employee.id} className="hierarchy-row">
-                    <td>
-                      <div className="level-indicator">
-                        <div className="level-badge">{employee.level}</div>
-                        <div className="level-indent" style={{ paddingLeft: `${employee.level * 20}px` }}>
-                          {'└─'.repeat(employee.level > 0 ? 1 : 0)}
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="employee-cell">
-                        {employee.image_url ? (
-                          <img src={employee.image_url} alt={employee.emp_name} className="employee-avatar-small" />
-                        ) : (
-                          <div className="employee-avatar-placeholder">
-                            {employee.emp_name.charAt(0)}
+                .map((employee, index) => {
+                  const manager = employee.managerId ? employees.find(e => e.emp_code === employee.managerId) : null;
+                  return (
+                    <tr key={employee.emp_code} className="hierarchy-row">
+                      <td>
+                        <div className="level-indicator">
+                          <div className="level-badge">{employee.level}</div>
+                          <div className="level-indent" style={{ paddingLeft: `${employee.level * 20}px` }}>
+                            {'└─'.repeat(employee.level > 0 ? 1 : 0)}
                           </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="employee-cell">
+                          {employee.image_url ? (
+                            <img src={employee.image_url} alt={employee.emp_name} className="employee-avatar-small" />
+                          ) : (
+                            <div className="employee-avatar-placeholder">
+                              {employee.emp_name.charAt(0)}
+                            </div>
+                          )}
+                          <span className="employee-name">{employee.emp_name}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <span className="employee-code">#{employee.emp_code}</span>
+                      </td>
+                      <td>
+                        <span className="employee-position">{employee.designation}</span>
+                      </td>
+                      <td>
+                        <span className="employee-department">{employee.department}</span>
+                      </td>
+                      <td>
+                        {manager ? (
+                          <span className="manager-info">
+                            {manager.emp_name} (#{manager.emp_code})
+                          </span>
+                        ) : (
+                          <span className="no-manager">Top Level</span>
                         )}
-                        <span className="employee-name">{employee.emp_name}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <span className="employee-code">#{employee.emp_code}</span>
-                    </td>
-                    <td>
-                      <span className="employee-position">{employee.designation}</span>
-                    </td>
-                    <td>
-                      <span className="employee-department">{employee.department}</span>
-                    </td>
-                    <td>
-                      <div className="direct-reports">
-                        <span className="reports-count">{employee.directReportsCount}</span>
-                        <span className="reports-label">Direct Reports</span>
-                      </div>
-                    </td>
-                    <td>
-                      <button 
-                        onClick={() => removeEmployeeFromHierarchy(employee.id)}
-                        className="action-btn remove"
-                      >
-                        Remove
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td>
+                        <div className="direct-reports">
+                          <span className="reports-count">{employee.directReportsCount}</span>
+                          <span className="reports-label">Direct Reports</span>
+                        </div>
+                      </td>
+                      <td>
+                        <button 
+                          onClick={() => removeEmployeeFromHierarchy(employee.emp_code)}
+                          className="action-btn remove"
+                        >
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
             </tbody>
           </table>
         </div>
