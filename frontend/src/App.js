@@ -761,11 +761,41 @@ function App() {
       {/* Enhanced Header */}
       <div className="header-professional shadow-professional dark:bg-gray-800 dark:border-gray-600">
         <div className="container mx-auto px-6 py-4">
-          <div className="text-center">
-            <h1 className="text-5xl font-bold text-professional-primary dark:text-white mb-2 animate-fade-in">
-              SMARTWORLD DEVELOPERS PVT. LTD.
-            </h1>
-            <p className="text-2xl font-semibold text-professional-secondary dark:text-gray-300">Employee Directory</p>
+          <div className="flex items-center justify-between">
+            {/* Left side - Data control buttons */}
+            <div className="flex space-x-2">
+              <button
+                onClick={refreshData}
+                className="flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium text-sm shadow-md"
+                title="Refresh employee data"
+              >
+                🔄 Refresh Data
+              </button>
+              <button
+                onClick={() => setShowExcelUpload(true)}
+                className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium text-sm shadow-md"
+                title="Upload Excel file"
+              >
+                📊 Upload Excel
+              </button>
+              <div className="flex items-center px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm">
+                <span className="text-gray-600 dark:text-gray-300 mr-2">Source:</span>
+                <span className={`font-medium ${dataSource === 'excel' ? 'text-blue-600' : 'text-green-600'}`}>
+                  {dataSource === 'excel' ? '📊 Excel' : '📋 Google Sheets'}
+                </span>
+              </div>
+            </div>
+
+            {/* Center - Company title */}
+            <div className="text-center flex-1">
+              <h1 className="text-5xl font-bold text-professional-primary dark:text-white mb-2 animate-fade-in">
+                SMARTWORLD DEVELOPERS PVT. LTD.
+              </h1>
+              <p className="text-2xl font-semibold text-professional-secondary dark:text-gray-300">Employee Directory</p>
+            </div>
+
+            {/* Right side - placeholder for future buttons */}
+            <div className="w-32"></div>
           </div>
         </div>
       </div>
