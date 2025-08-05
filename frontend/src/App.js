@@ -540,6 +540,67 @@ function App() {
     showToast(message, 'success');
   };
 
+  // Excel Upload and Refresh Functions
+  const refreshData = async () => {
+    try {
+      const response = await fetch(`${backendUrl}/api/refresh-data`, {
+        method: 'POST',
+      });
+      const result = await response.json();
+      
+      if (response.ok) {
+        showToast(result.message, 'success');
+        fetchAllEmployees(); // Reload employees
+        fetchFieldValues(); // Reload field values
+      } else {
+        showToast('Failed to refresh data', 'error');
+      }
+    } catch (error) {
+      showToast('Error refreshing data', 'error');
+      console.error('Refresh error:', error);
+    }
+  };
+
+  const handleExcelUpload = async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch(`${backendUrl}/api/upload-excel`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+      
+      if (response.ok) {
+        showToast(result.message, 'success');
+        setDataSource('excel');
+        fetchAllEmployees(); // Reload employees
+        fetchFieldValues(); // Reload field values
+        setShowExcelUpload(false);
+      } else {
+        showToast(result.detail || 'Failed to upload Excel file', 'error');
+      }
+    } catch (error) {
+      showToast('Error uploading Excel file', 'error');
+      console.error('Upload error:', error);
+    }
+  };
+
+  const getDataSourceInfo = async () => {
+    try {
+      const response = await fetch(`${backendUrl}/api/data-source-info`);
+      const result = await response.json();
+      
+      if (response.ok) {
+        setDataSource(result.data_source);
+      }
+    } catch (error) {
+      console.error('Error fetching data source info:', error);
+    }
+  };
+
   const searchFieldsConfig = [
     { key: 'emp_code', label: 'Employee Code', placeholder: 'Employee Code', icon: '🆔' },
     { key: 'emp_name', label: 'Employee Name', placeholder: 'Employee Name', icon: '👤' },
