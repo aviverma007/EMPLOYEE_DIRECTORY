@@ -692,8 +692,10 @@ function App() {
       </div>
 
       <div className="container mx-auto px-6">
-        {/* Enhanced Search Section */}
-        <div className="glass-effect rounded-professional shadow-professional-lg p-6 mb-6 border-professional animate-slide-up">
+        {currentTab === 'directory' ? (
+          <>
+            {/* Enhanced Search Section */}
+            <div className="glass-effect rounded-professional shadow-professional-lg p-6 mb-6 border-professional animate-slide-up">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-8 gap-4 mb-6">
             {searchFieldsConfig.map(({ key, label, placeholder, icon }) => (
               <div key={key} className="relative">
