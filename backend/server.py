@@ -13,6 +13,9 @@ from pymongo.errors import DuplicateKeyError
 import uuid
 import random
 from PIL import Image
+import pandas as pd
+import openpyxl
+from pathlib import Path
 
 app = FastAPI()
 
