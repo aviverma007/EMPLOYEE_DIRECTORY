@@ -36,6 +36,7 @@ try:
     db = client[DB_NAME]
     employees_collection = db.employees
     images_collection = db.employee_images
+    hierarchies_collection = db.hierarchies  # New collection for saving hierarchies
     print(f"✅ Connected to MongoDB: {DB_NAME}")
 except Exception as e:
     print(f"❌ MongoDB connection failed: {e}")
