@@ -457,6 +457,51 @@ backend:
         agent: "testing"
         comment: "✅ TESTED: Extension number field integration working perfectly. All 4 test areas passed: 1) /api/employees endpoint includes extension_number field for all 642 employees with proper values (e.g., emp 81096 has extension 6857, emp 80957 has extension 0). 2) /api/employees/search endpoint supports extension_number field search with suggestions and filtering - tested with real extension numbers like 6606 (7 employees), partial searches work correctly. 3) /api/employees/filter endpoint supports extension_number parameter filtering with exact matches and multi-field combinations. 4) /api/field-values endpoint includes extension_numbers array with 73 unique extension numbers, consistent with employee data. Extension number functionality is production-ready!"
 
+  - task: "Excel upload functionality"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented POST /api/upload-excel endpoint for uploading Excel files with employee data, file validation, and data parsing"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Excel upload functionality working perfectly. POST /api/upload-excel successfully accepts .xlsx files, validates file format (rejects non-Excel files), parses employee data using pandas and openpyxl, updates employees_data array with parsed data, and returns proper response with success flag and employee count. File validation correctly rejects non-Excel files with 400 status. Data parsing works with proper column mapping from Excel headers to internal schema. Successfully tested with 3-employee test Excel file."
+
+  - task: "Data source information API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented GET /api/data-source-info endpoint to provide information about current data source configuration"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Data source info API working perfectly. GET /api/data-source-info returns proper response structure with data_source, employees_count, and last_updated fields. Correctly shows current data source (sheets/excel/upload), accurate employee count, and valid ISO timestamp. For Excel source, includes excel_file_path and file_exists fields. For Sheets source, includes sheets_url field. All field validation passes - data_source values are valid, employee count is accurate, timestamp format is correct."
+
+  - task: "Enhanced refresh data API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Enhanced POST /api/refresh-data endpoint to support multiple data sources (sheets, excel, upload) and return source information"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Enhanced refresh data API working perfectly. POST /api/refresh-data successfully refreshes employee data based on configured DATA_SOURCE environment variable. Returns proper response structure with message containing employee count and source field indicating current data source. Tested with both sheets and excel sources - correctly loads data from appropriate source. After refresh, employee data is available and accurate. Response structure validation passes with all required fields present."
+
 frontend:
   - task: "Search interface with 6 filter fields"
     implemented: true
