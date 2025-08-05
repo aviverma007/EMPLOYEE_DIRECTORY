@@ -273,16 +273,6 @@ const HierarchyBuilder = ({ employees }) => {
     </div>
   );
 
-  const toggleNodeExpansion = (nodeId) => {
-    const newExpanded = new Set(expandedNodes);
-    if (newExpanded.has(nodeId)) {
-      newExpanded.delete(nodeId);
-    } else {
-      newExpanded.add(nodeId);
-    }
-    setExpandedNodes(newExpanded);
-  };
-
   const renderOrgChart = () => {
     const rootEmployees = hierarchyData.filter(emp => emp.level === 0);
     
