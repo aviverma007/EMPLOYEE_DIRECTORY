@@ -770,8 +770,6 @@ function App() {
                         <div className="space-y-1 mb-3">
                           <p className="text-gray-600 text-xs">🏢 {employee.department}</p>
                           <p className="text-gray-600 text-xs">📍 {employee.location}</p>
-                          {employee.extension_number && <p className="text-gray-600 text-xs">☎️ Ext: {employee.extension_number}</p>}
-                          {employee.email && <p className="text-gray-600 text-xs">📧 {employee.email}</p>}
                           {employee.joining_date && <p className="text-gray-600 text-xs">📅 {employee.joining_date}</p>}
                         </div>
                         
