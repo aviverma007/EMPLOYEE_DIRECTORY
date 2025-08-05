@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
+import HierarchyBuilder from './HierarchyBuilder';
 
 // Toast Notification Component
 const Toast = ({ message, type, onClose }) => {
