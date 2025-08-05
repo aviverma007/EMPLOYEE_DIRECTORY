@@ -5,6 +5,13 @@ const HierarchyBuilder = ({ employees }) => {
   const [viewMode, setViewMode] = useState('table'); // 'table' or 'org-chart'
   const [expandedNodes, setExpandedNodes] = useState(new Set());
   
+  // Hierarchy save/load states
+  const [savedHierarchies, setSavedHierarchies] = useState([]);
+  const [currentHierarchyId, setCurrentHierarchyId] = useState(null);
+  const [hierarchyName, setHierarchyName] = useState('');
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [showLoadDialog, setShowLoadDialog] = useState(false);
+  
   // Manual hierarchy building states
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [selectedManager, setSelectedManager] = useState('');
