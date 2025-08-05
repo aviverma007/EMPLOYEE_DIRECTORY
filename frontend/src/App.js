@@ -253,6 +253,119 @@ const ImageUpload = ({ employeeCode, currentImage, onImageUpdate, onClose }) => 
   );
 };
 
+// Excel Upload Component
+const ExcelUpload = ({ onUpload, onClose }) => {
+  const [dragActive, setDragActive] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+
+    const file = e.dataTransfer.files[0];
+    if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) {
+      handleUpload(file);
+    } else {
+      alert('Please upload a valid Excel file (.xlsx or .xls)');
+    }
+  };
+
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      handleUpload(file);
+    }
+  };
+
+  const handleUpload = async (file) => {
+    setUploading(true);
+    try {
+      await onUpload(file);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Upload Excel File</h2>
+          <p className="text-gray-600 text-sm">Upload your employee data Excel file (.xlsx or .xls)</p>
+        </div>
+
+        <div
+          className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+            dragActive 
+              ? 'border-blue-500 bg-blue-50' 
+              : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50'
+          }`}
+          onDragEnter={handleDrag}
+          onDragLeave={handleDrag}
+          onDragOver={handleDrag}
+          onDrop={handleDrop}
+        >
+          {uploading ? (
+            <div className="space-y-4">
+              <div className="w-16 h-16 mx-auto border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              <p className="text-blue-600 font-medium">Uploading Excel file...</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="text-6xl">📊</div>
+              <div>
+                <p className="text-lg font-semibold text-gray-700 mb-2">
+                  Drag & drop your Excel file here
+                </p>
+                <p className="text-sm text-gray-500 mb-4">or</p>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors font-medium"
+                >
+                  Browse Files
+                </button>
+              </div>
+              <p className="text-xs text-gray-400">
+                Supported formats: .xlsx, .xls
+              </p>
+            </div>
+          )}
+        </div>
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".xlsx,.xls"
+          onChange={handleFileSelect}
+          className="hidden"
+        />
+
+        <div className="flex space-x-4 mt-6">
+          <button
+            onClick={onClose}
+            className="flex-1 px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            disabled={uploading}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 function App() {
   const [employees, setEmployees] = useState([]);
   const [filteredEmployees, setFilteredEmployees] = useState([]);
