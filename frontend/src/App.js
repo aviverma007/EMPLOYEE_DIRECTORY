@@ -279,6 +279,19 @@ function App() {
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
+  const toggleTheme = () => {
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    
+    if (newDarkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  };
+
   useEffect(() => {
     fetchAllEmployees();
     fetchFieldValues();
