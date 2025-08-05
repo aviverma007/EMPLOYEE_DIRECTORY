@@ -267,6 +267,7 @@ function App() {
   const [showSuggestions, setShowSuggestions] = useState({});
   const [fieldValues, setFieldValues] = useState({});
   const [viewMode, setViewMode] = useState('card');
+  const [currentTab, setCurrentTab] = useState('directory'); // New state for tab management
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [attendance, setAttendance] = useState(null);
   const [loading, setLoading] = useState(true);
