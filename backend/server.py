@@ -212,10 +212,12 @@ def fetch_employee_data():
     """Fetch employee data based on configured data source"""
     global employees_data
     
-    if DATA_SOURCE == 'excel':
+    current_data_source = os.environ.get('DATA_SOURCE', 'sheets')
+    
+    if current_data_source == 'excel':
         if fetch_excel_data():
             return
-    elif DATA_SOURCE == 'sheets':
+    elif current_data_source == 'sheets':
         if fetch_sheets_data():
             return
     
