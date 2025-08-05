@@ -294,7 +294,7 @@ button:active {
 }
 
 .hierarchy-row:hover {
-  @apply bg-blue-25 dark:bg-gray-700;
+  @apply bg-blue-50 dark:bg-gray-700;
 }
 
 .level-indicator {
