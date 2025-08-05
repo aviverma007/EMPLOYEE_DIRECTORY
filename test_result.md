@@ -177,6 +177,30 @@ backend:
         agent: "testing"
         comment: "✅ TESTED: Image upload functionality working perfectly. POST /api/employees/{emp_code}/image supports JPEG/PNG/GIF/WEBP formats, validates file size (5MB limit), stores as base64 in MongoDB. GET /api/employees/{emp_code}/image retrieves images correctly. DELETE /api/employees/{emp_code}/image removes images properly. Enhanced /api/employees endpoint includes image_url for employees with uploaded images. All file validation working - rejects oversized files and invalid formats."
 
+  - task: "Hierarchy Builder Component"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/HierarchyBuilder.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Created comprehensive HierarchyBuilder component with custom hierarchy table creator, visual org chart with boxes and connecting lines, table view with all columns (Level, Employee, Code, Position, Department, Direct Reports, Actions), and view toggle between table and org chart formats. Added professional CSS styling for both views."
+
+  - task: "Hierarchy Builder CSS Styles"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.css"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Added comprehensive CSS styles for hierarchy builder including org-chart styles, table styles, employee selection panel, view controls, professional card designs, and responsive layouts. Fixed bg-blue-25 CSS error."
+
 frontend:
   - task: "Search interface with 6 filter fields"
     implemented: true
