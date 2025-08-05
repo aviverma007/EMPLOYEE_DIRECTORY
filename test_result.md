@@ -559,7 +559,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Extension number field testing completed successfully"
+    - "Excel upload and refresh functionality testing completed successfully"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
