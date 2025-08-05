@@ -2,141 +2,173 @@ import React, { useState, useEffect } from 'react';
 
 const HierarchyBuilder = ({ employees }) => {
   const [hierarchyData, setHierarchyData] = useState([]);
-  const [selectedEmployees, setSelectedEmployees] = useState([]);
   const [viewMode, setViewMode] = useState('table'); // 'table' or 'org-chart'
-  const [draggedEmployee, setDraggedEmployee] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [expandedNodes, setExpandedNodes] = useState(new Set());
+  
+  // Manual hierarchy building states
+  const [selectedDepartment, setSelectedDepartment] = useState('');
+  const [selectedManager, setSelectedManager] = useState('');
+  const [selectedSubordinate, setSelectedSubordinate] = useState('');
+  const [availableManagers, setAvailableManagers] = useState([]);
+  const [availableSubordinates, setAvailableSubordinates] = useState([]);
 
-  // Initialize hierarchy data
+  // Get unique departments
+  const departments = [...new Set(employees.map(emp => emp.department))].sort();
+
   useEffect(() => {
-    if (employees.length > 0) {
-      // Create initial hierarchy from existing reporting structure
-      buildInitialHierarchy();
+    if (selectedDepartment) {
+      // Get employees in selected department
+      const deptEmployees = employees.filter(emp => emp.department === selectedDepartment);
+      setAvailableManagers(deptEmployees);
+      setAvailableSubordinates(deptEmployees);
+    } else {
+      setAvailableManagers([]);
+      setAvailableSubordinates([]);
     }
-  }, [employees]);
+    setSelectedManager('');
+    setSelectedSubordinate('');
+  }, [selectedDepartment, employees]);
 
-  const buildInitialHierarchy = () => {
-    const hierarchyMap = new Map();
-    const rootEmployees = [];
+  useEffect(() => {
+    if (selectedManager) {
+      // Filter subordinates to exclude the selected manager and anyone already in hierarchy
+      const usedEmployeeCodes = hierarchyData.map(h => h.emp_code);
+      const availableSubs = employees.filter(emp => 
+        emp.department === selectedDepartment && 
+        emp.emp_code !== selectedManager &&
+        !usedEmployeeCodes.includes(emp.emp_code)
+      );
+      setAvailableSubordinates(availableSubs);
+    }
+  }, [selectedManager, hierarchyData, selectedDepartment, employees]);
 
-    employees.forEach(emp => {
-      const hierarchyItem = {
-        ...emp,
-        level: 0,
+  const clearAllHierarchy = () => {
+    setHierarchyData([]);
+    setSelectedDepartment('');
+    setSelectedManager('');
+    setSelectedSubordinate('');
+    setExpandedNodes(new Set());
+  };
+
+  const addHierarchyRelationship = () => {
+    if (!selectedManager || !selectedSubordinate) {
+      alert('Please select both manager and subordinate');
+      return;
+    }
+
+    const managerEmployee = employees.find(emp => emp.emp_code === selectedManager);
+    const subordinateEmployee = employees.find(emp => emp.emp_code === selectedSubordinate);
+
+    if (!managerEmployee || !subordinateEmployee) {
+      alert('Selected employees not found');
+      return;
+    }
+
+    // Check if manager already exists in hierarchy
+    const existingManagerIndex = hierarchyData.findIndex(h => h.emp_code === selectedManager);
+    
+    let newHierarchy = [...hierarchyData];
+    
+    if (existingManagerIndex >= 0) {
+      // Manager exists, add subordinate to their direct reports
+      const manager = newHierarchy[existingManagerIndex];
+      const subordinateWithLevel = {
+        ...subordinateEmployee,
+        level: manager.level + 1,
         directReports: [],
         directReportsCount: 0,
-        id: emp.emp_code
+        managerId: selectedManager
       };
-      hierarchyMap.set(emp.emp_code, hierarchyItem);
-    });
+      
+      manager.directReports.push(subordinateWithLevel);
+      manager.directReportsCount++;
+      
+      // Add subordinate to main hierarchy array
+      newHierarchy.push(subordinateWithLevel);
+    } else {
+      // Manager doesn't exist, add both manager and subordinate
+      const managerWithHierarchy = {
+        ...managerEmployee,
+        level: 0, // Will be recalculated based on their position
+        directReports: [],
+        directReportsCount: 0,
+        managerId: null
+      };
+      
+      const subordinateWithLevel = {
+        ...subordinateEmployee,
+        level: 1,
+        directReports: [],
+        directReportsCount: 0,
+        managerId: selectedManager
+      };
+      
+      managerWithHierarchy.directReports.push(subordinateWithLevel);
+      managerWithHierarchy.directReportsCount = 1;
+      
+      newHierarchy.push(managerWithHierarchy);
+      newHierarchy.push(subordinateWithLevel);
+    }
 
-    // Build hierarchy based on reporting manager
-    employees.forEach(emp => {
-      if (emp.reporting_manager && emp.reporting_manager !== '*') {
-        // Extract manager code from format like "Name(Code)"
-        const match = emp.reporting_manager.match(/\(([^)]+)\)/);
-        const managerCode = match ? match[1] : null;
-        
-        if (managerCode && hierarchyMap.has(managerCode)) {
-          const employee = hierarchyMap.get(emp.emp_code);
-          const manager = hierarchyMap.get(managerCode);
-          
-          manager.directReports.push(employee);
-          manager.directReportsCount++;
-          employee.level = manager.level + 1;
-        } else {
-          rootEmployees.push(hierarchyMap.get(emp.emp_code));
-        }
-      } else {
-        rootEmployees.push(hierarchyMap.get(emp.emp_code));
-      }
-    });
+    // Recalculate levels for all employees
+    const recalculatedHierarchy = recalculateLevels(newHierarchy);
+    setHierarchyData(recalculatedHierarchy);
+    
+    // Reset selections
+    setSelectedManager('');
+    setSelectedSubordinate('');
+  };
 
-    // Flatten hierarchy for table view
-    const flatHierarchy = [];
-    const flattenHierarchy = (items, level = 0) => {
-      items.forEach(item => {
-        item.level = level;
-        flatHierarchy.push(item);
-        if (item.directReports.length > 0) {
-          flattenHierarchy(item.directReports, level + 1);
+  const recalculateLevels = (hierarchy) => {
+    const hierarchyMap = new Map();
+    hierarchy.forEach(emp => hierarchyMap.set(emp.emp_code, emp));
+    
+    // Find roots (employees with no manager in the hierarchy)
+    const roots = hierarchy.filter(emp => !emp.managerId || !hierarchyMap.has(emp.managerId));
+    
+    // Set root levels to 0
+    roots.forEach(root => root.level = 0);
+    
+    // Recursively set levels
+    const setLevelsRecursively = (employee, level) => {
+      employee.level = level;
+      employee.directReports.forEach(subordinate => {
+        const subordinateInHierarchy = hierarchyMap.get(subordinate.emp_code);
+        if (subordinateInHierarchy) {
+          setLevelsRecursively(subordinateInHierarchy, level + 1);
         }
       });
     };
-
-    flattenHierarchy(rootEmployees);
-    setHierarchyData(flatHierarchy);
+    
+    roots.forEach(root => setLevelsRecursively(root, 0));
+    
+    return hierarchy;
   };
 
-  const addEmployeeToHierarchy = (employee, parentId = null) => {
-    const newHierarchyItem = {
-      ...employee,
-      id: employee.emp_code,
-      directReports: [],
-      directReportsCount: 0,
-      level: parentId ? hierarchyData.find(h => h.id === parentId)?.level + 1 : 0
+  const removeEmployeeFromHierarchy = (empCode) => {
+    // Remove employee and all their subordinates
+    const removeEmployeeAndSubordinates = (empToRemove, hierarchy) => {
+      // Find all subordinates of this employee
+      const subordinates = hierarchy.filter(emp => emp.managerId === empToRemove);
+      
+      // Recursively remove subordinates
+      subordinates.forEach(sub => {
+        hierarchy = removeEmployeeAndSubordinates(sub.emp_code, hierarchy);
+      });
+      
+      // Remove the employee from their manager's direct reports
+      hierarchy.forEach(emp => {
+        emp.directReports = emp.directReports.filter(sub => sub.emp_code !== empToRemove);
+        emp.directReportsCount = emp.directReports.length;
+      });
+      
+      // Remove the employee from main hierarchy
+      return hierarchy.filter(emp => emp.emp_code !== empToRemove);
     };
 
-    if (parentId) {
-      setHierarchyData(prev => 
-        prev.map(item => 
-          item.id === parentId 
-            ? { ...item, directReports: [...item.directReports, newHierarchyItem], directReportsCount: item.directReportsCount + 1 }
-            : item
-        ).concat([newHierarchyItem])
-      );
-    } else {
-      setHierarchyData(prev => [...prev, newHierarchyItem]);
-    }
-
-    setSelectedEmployees(prev => [...prev, employee.emp_code]);
+    const updatedHierarchy = removeEmployeeAndSubordinates(empCode, [...hierarchyData]);
+    setHierarchyData(updatedHierarchy);
   };
-
-  const removeEmployeeFromHierarchy = (employeeId) => {
-    setHierarchyData(prev => prev.filter(item => item.id !== employeeId));
-    setSelectedEmployees(prev => prev.filter(id => id !== employeeId));
-  };
-
-  const updateEmployeePosition = (employeeId, newParentId) => {
-    setHierarchyData(prev => {
-      const updated = [...prev];
-      const employeeIndex = updated.findIndex(item => item.id === employeeId);
-      const employee = updated[employeeIndex];
-      
-      if (employee) {
-        // Remove from old parent
-        updated.forEach(item => {
-          if (item.directReports.some(report => report.id === employeeId)) {
-            item.directReports = item.directReports.filter(report => report.id !== employeeId);
-            item.directReportsCount--;
-          }
-        });
-
-        // Add to new parent or root
-        if (newParentId) {
-          const newParent = updated.find(item => item.id === newParentId);
-          if (newParent) {
-            employee.level = newParent.level + 1;
-            newParent.directReports.push(employee);
-            newParent.directReportsCount++;
-          }
-        } else {
-          employee.level = 0;
-        }
-      }
-
-      return updated;
-    });
-  };
-
-  const filteredEmployees = employees.filter(emp => 
-    !selectedEmployees.includes(emp.emp_code) &&
-    (emp.emp_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     emp.emp_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     emp.department.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
-
-  const [expandedNodes, setExpandedNodes] = useState(new Set());
 
   const toggleNodeExpansion = (nodeId) => {
     const newExpanded = new Set(expandedNodes);
