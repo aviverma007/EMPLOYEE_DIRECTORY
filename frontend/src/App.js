@@ -275,6 +275,13 @@ function App() {
   const [showImageUpload, setShowImageUpload] = useState(false);
   const [toast, setToast] = useState(null);
   const [darkMode, setDarkMode] = useState(false);
+  
+  // Hierarchy Builder states
+  const [selectedDepartment, setSelectedDepartment] = useState('');
+  const [departmentHeads, setDepartmentHeads] = useState([]);
+  const [selectedHead, setSelectedHead] = useState('');
+  const [hierarchyData, setHierarchyData] = useState({});
+  const [hierarchyLevels, setHierarchyLevels] = useState([]);
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
