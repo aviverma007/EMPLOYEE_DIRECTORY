@@ -589,9 +589,65 @@ async def get_field_values():
 
 @app.post("/api/refresh-data")
 async def refresh_employee_data():
-    """Manually refresh employee data from Google Sheets"""
+    """Manually refresh employee data from configured source"""
     fetch_employee_data()
-    return {"message": f"Data refreshed successfully. Loaded {len(employees_data)} employees."}
+    return {"message": f"Data refreshed successfully. Loaded {len(employees_data)} employees.", "source": DATA_SOURCE}
+
+@app.post("/api/upload-excel")
+async def upload_excel_file(file: UploadFile = File(...)):
+    """Upload Excel file to replace employee data"""
+    global employees_data
+    
+    # Validate file type
+    if not file.filename.endswith(('.xlsx', '.xls')):
+        raise HTTPException(status_code=400, detail="Invalid file format. Please upload an Excel file (.xlsx or .xls)")
+    
+    try:
+        # Create data directory if it doesn't exist
+        os.makedirs('/app/data', exist_ok=True)
+        
+        # Save uploaded file
+        file_path = f'/app/data/uploaded_employees.xlsx'
+        with open(file_path, 'wb') as f:
+            content = await file.read()
+            f.write(content)
+        
+        # Try to load data from the uploaded file
+        if fetch_excel_data(file_path):
+            # If successful, update the EXCEL_FILE_PATH environment variable for future refreshes
+            os.environ['EXCEL_FILE_PATH'] = file_path
+            os.environ['DATA_SOURCE'] = 'excel'
+            
+            return {
+                "success": True,
+                "message": f"Excel file uploaded and processed successfully. Loaded {len(employees_data)} employees.",
+                "filename": file.filename,
+                "employees_count": len(employees_data)
+            }
+        else:
+            raise HTTPException(status_code=400, detail="Failed to process Excel file. Please check the format and columns.")
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing Excel file: {str(e)}")
+
+@app.get("/api/data-source-info")
+async def get_data_source_info():
+    """Get information about current data source"""
+    info = {
+        "data_source": DATA_SOURCE,
+        "employees_count": len(employees_data),
+        "last_updated": datetime.now().isoformat()
+    }
+    
+    if DATA_SOURCE == 'excel':
+        info["excel_file_path"] = EXCEL_FILE_PATH
+        info["file_exists"] = os.path.exists(EXCEL_FILE_PATH)
+    elif DATA_SOURCE == 'sheets':
+        info["sheets_url"] = SHEETS_CSV_URL
+    
+    return info
 
 @app.post("/api/employees/{emp_code}/image")
 async def upload_employee_image(emp_code: str, file: UploadFile = File(...)):
