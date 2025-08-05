@@ -297,6 +297,7 @@ function App() {
   useEffect(() => {
     fetchAllEmployees();
     fetchFieldValues();
+    getDataSourceInfo();
     
     // Load theme preference from localStorage
     const savedTheme = localStorage.getItem('theme');
