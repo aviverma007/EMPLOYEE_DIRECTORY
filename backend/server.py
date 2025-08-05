@@ -745,6 +745,110 @@ async def delete_employee_image(emp_code: str):
     
     return {"success": True, "message": "Image deleted successfully"}
 
+@app.post("/api/hierarchy/save")
+async def save_hierarchy(hierarchy_data: dict):
+    """Save hierarchy structure"""
+    if hierarchies_collection is None:
+        raise HTTPException(status_code=500, detail="Database connection not available")
+    
+    try:
+        hierarchy_id = hierarchy_data.get('id', str(uuid.uuid4()))
+        hierarchy_name = hierarchy_data.get('name', 'Unnamed Hierarchy')
+        structure = hierarchy_data.get('structure', {})
+        
+        hierarchy_doc = {
+            "hierarchy_id": hierarchy_id,
+            "name": hierarchy_name,
+            "structure": structure,
+            "created_at": datetime.now().isoformat(),
+            "updated_at": datetime.now().isoformat()
+        }
+        
+        # Use upsert to replace existing hierarchy with same ID
+        result = hierarchies_collection.replace_one(
+            {"hierarchy_id": hierarchy_id},
+            hierarchy_doc,
+            upsert=True
+        )
+        
+        return {
+            "success": True,
+            "message": "Hierarchy saved successfully",
+            "hierarchy_id": hierarchy_id,
+            "name": hierarchy_name
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error saving hierarchy: {str(e)}")
+
+@app.get("/api/hierarchy/list")
+async def get_saved_hierarchies():
+    """Get all saved hierarchies"""
+    if hierarchies_collection is None:
+        raise HTTPException(status_code=500, detail="Database connection not available")
+    
+    try:
+        hierarchies = []
+        for doc in hierarchies_collection.find({}, {"structure": 0}):  # Exclude structure data for list view
+            hierarchy = {
+                "hierarchy_id": doc.get("hierarchy_id"),
+                "name": doc.get("name"),
+                "created_at": doc.get("created_at"),
+                "updated_at": doc.get("updated_at")
+            }
+            hierarchies.append(hierarchy)
+        
+        return {"hierarchies": hierarchies}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching hierarchies: {str(e)}")
+
+@app.get("/api/hierarchy/{hierarchy_id}")
+async def get_hierarchy(hierarchy_id: str):
+    """Get specific hierarchy by ID"""
+    if hierarchies_collection is None:
+        raise HTTPException(status_code=500, detail="Database connection not available")
+    
+    try:
+        hierarchy_doc = hierarchies_collection.find_one({"hierarchy_id": hierarchy_id})
+        
+        if not hierarchy_doc:
+            raise HTTPException(status_code=404, detail="Hierarchy not found")
+        
+        hierarchy = {
+            "hierarchy_id": hierarchy_doc.get("hierarchy_id"),
+            "name": hierarchy_doc.get("name"),
+            "structure": hierarchy_doc.get("structure", {}),
+            "created_at": hierarchy_doc.get("created_at"),
+            "updated_at": hierarchy_doc.get("updated_at")
+        }
+        
+        return hierarchy
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching hierarchy: {str(e)}")
+
+@app.delete("/api/hierarchy/{hierarchy_id}")
+async def delete_hierarchy(hierarchy_id: str):
+    """Delete hierarchy by ID"""
+    if hierarchies_collection is None:
+        raise HTTPException(status_code=500, detail="Database connection not available")
+    
+    try:
+        result = hierarchies_collection.delete_one({"hierarchy_id": hierarchy_id})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Hierarchy not found")
+        
+        return {"success": True, "message": "Hierarchy deleted successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting hierarchy: {str(e)}")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
