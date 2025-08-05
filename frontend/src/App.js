@@ -1192,14 +1192,6 @@ function App() {
             onClose={() => setShowImageUpload(false)}
           />
         )}
-
-        {/* Excel Upload Modal */}
-        {showExcelUpload && (
-          <ExcelUpload
-            onUpload={handleExcelUpload}
-            onClose={() => setShowExcelUpload(false)}
-          />
-        )}
         </>
         ) : (
           /* Hierarchy Builder Content */
