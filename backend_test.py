@@ -9,6 +9,7 @@ import json
 import sys
 import base64
 import io
+import pandas as pd
 from datetime import datetime
 from PIL import Image
 
