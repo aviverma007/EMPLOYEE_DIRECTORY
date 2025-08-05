@@ -389,7 +389,6 @@ function App() {
   const [showImageUpload, setShowImageUpload] = useState(false);
   const [toast, setToast] = useState(null);
   const [darkMode, setDarkMode] = useState(false);
-  const [showExcelUpload, setShowExcelUpload] = useState(false);
   const [dataSource, setDataSource] = useState('sheets');
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL;
