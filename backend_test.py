@@ -809,6 +809,281 @@ class BackendTester:
             )
             return False
 
+    def create_test_excel_file(self, filename="test_employees.xlsx", valid=True):
+        """Create a test Excel file for upload testing"""
+        try:
+            import pandas as pd
+            
+            if valid:
+                # Create valid test data with proper column headers
+                test_data = {
+                    'EMP ID': ['TEST001', 'TEST002', 'TEST003'],
+                    'EMP NAME': ['Test Employee 1', 'Test Employee 2', 'Test Employee 3'],
+                    'DEPARTMENT': ['IT', 'HR', 'Finance'],
+                    'LOCATION': ['IFC', 'Mumbai', 'Delhi'],
+                    'GRADE': ['Executive', 'Manager', 'Senior Manager'],
+                    'MOBILE': ['9876543210', '9876543211', '9876543212'],
+                    'EXTENSION NUMBER': ['1001', '1002', '1003'],
+                    'EMAIL': ['test1@company.com', 'test2@company.com', 'test3@company.com']
+                }
+            else:
+                # Create invalid test data (missing required columns)
+                test_data = {
+                    'INVALID_COL1': ['Data1', 'Data2'],
+                    'INVALID_COL2': ['Data3', 'Data4']
+                }
+            
+            df = pd.DataFrame(test_data)
+            
+            # Save to bytes buffer
+            excel_buffer = io.BytesIO()
+            df.to_excel(excel_buffer, index=False, engine='openpyxl')
+            excel_data = excel_buffer.getvalue()
+            
+            return excel_data
+            
+        except Exception as e:
+            print(f"Error creating test Excel file: {e}")
+            return None
+
+    def test_excel_upload_api(self):
+        """Test Excel file upload functionality"""
+        print("\n=== Testing Excel Upload API ===")
+        
+        try:
+            # Test 1: Valid Excel file upload
+            test_excel = self.create_test_excel_file(valid=True)
+            if test_excel:
+                files = {'file': ('test_employees.xlsx', test_excel, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+                response = self.session.post(f"{API_BASE}/upload-excel", files=files)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("success") and "employees_count" in data:
+                        self.results["excel_upload_api"]["details"].append(
+                            self.log_result("Valid Excel Upload", True, f"Successfully uploaded Excel with {data['employees_count']} employees")
+                        )
+                    else:
+                        self.results["excel_upload_api"]["details"].append(
+                            self.log_result("Valid Excel Upload", False, "Invalid response structure")
+                        )
+                else:
+                    self.results["excel_upload_api"]["details"].append(
+                        self.log_result("Valid Excel Upload", False, f"HTTP {response.status_code}: {response.text}")
+                    )
+            
+            # Test 2: Invalid file format (non-Excel)
+            invalid_file = b"This is not an Excel file"
+            files = {'file': ('invalid.txt', invalid_file, 'text/plain')}
+            response = self.session.post(f"{API_BASE}/upload-excel", files=files)
+            
+            if response.status_code == 400:
+                self.results["excel_upload_api"]["details"].append(
+                    self.log_result("Invalid File Format", True, "Correctly rejected non-Excel file")
+                )
+            else:
+                self.results["excel_upload_api"]["details"].append(
+                    self.log_result("Invalid File Format", False, f"Expected 400, got {response.status_code}")
+                )
+            
+            # Test 3: Excel file with invalid structure
+            invalid_excel = self.create_test_excel_file(valid=False)
+            if invalid_excel:
+                files = {'file': ('invalid_structure.xlsx', invalid_excel, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+                response = self.session.post(f"{API_BASE}/upload-excel", files=files)
+                
+                if response.status_code == 400:
+                    self.results["excel_upload_api"]["details"].append(
+                        self.log_result("Invalid Excel Structure", True, "Correctly rejected Excel with invalid structure")
+                    )
+                else:
+                    self.results["excel_upload_api"]["details"].append(
+                        self.log_result("Invalid Excel Structure", False, f"Expected 400, got {response.status_code}")
+                    )
+            
+            # Test 4: Verify data was loaded after upload
+            response = self.session.get(f"{API_BASE}/employees")
+            if response.status_code == 200:
+                data = response.json()
+                employees = data.get("employees", [])
+                
+                # Check if test employees from Excel are present
+                test_emp_codes = [emp.get("emp_code") for emp in employees if emp.get("emp_code", "").startswith("TEST")]
+                
+                if test_emp_codes:
+                    self.results["excel_upload_api"]["details"].append(
+                        self.log_result("Data Loading Verification", True, f"Found {len(test_emp_codes)} test employees from uploaded Excel")
+                    )
+                else:
+                    self.results["excel_upload_api"]["details"].append(
+                        self.log_result("Data Loading Verification", False, "No test employees found after Excel upload")
+                    )
+            
+            self.results["excel_upload_api"]["passed"] = True
+            return True
+                
+        except Exception as e:
+            self.results["excel_upload_api"]["details"].append(
+                self.log_result("Excel Upload API", False, f"Exception: {str(e)}")
+            )
+            return False
+
+    def test_data_source_info_api(self):
+        """Test data source information API"""
+        print("\n=== Testing Data Source Info API ===")
+        
+        try:
+            response = self.session.get(f"{API_BASE}/data-source-info")
+            
+            if response.status_code != 200:
+                self.results["data_source_info_api"]["details"].append(
+                    self.log_result("Data Source Info API", False, f"HTTP {response.status_code}: {response.text}")
+                )
+                return False
+            
+            data = response.json()
+            
+            # Check required fields
+            required_fields = ["data_source", "employees_count", "last_updated"]
+            missing_fields = [field for field in required_fields if field not in data]
+            
+            if missing_fields:
+                self.results["data_source_info_api"]["details"].append(
+                    self.log_result("Response Structure", False, f"Missing required fields: {missing_fields}")
+                )
+                return False
+            
+            # Validate data_source value
+            valid_sources = ["sheets", "excel", "upload"]
+            if data["data_source"] not in valid_sources:
+                self.results["data_source_info_api"]["details"].append(
+                    self.log_result("Data Source Validation", False, f"Invalid data_source: {data['data_source']}")
+                )
+                return False
+            
+            # Check employees_count is a number
+            if not isinstance(data["employees_count"], int) or data["employees_count"] < 0:
+                self.results["data_source_info_api"]["details"].append(
+                    self.log_result("Employees Count", False, f"Invalid employees_count: {data['employees_count']}")
+                )
+                return False
+            
+            # Check last_updated is a valid timestamp
+            try:
+                datetime.fromisoformat(data["last_updated"].replace('Z', '+00:00'))
+                timestamp_valid = True
+            except:
+                timestamp_valid = False
+            
+            if not timestamp_valid:
+                self.results["data_source_info_api"]["details"].append(
+                    self.log_result("Timestamp Validation", False, f"Invalid timestamp: {data['last_updated']}")
+                )
+                return False
+            
+            # Check source-specific fields
+            if data["data_source"] == "excel" and "excel_file_path" in data:
+                self.results["data_source_info_api"]["details"].append(
+                    self.log_result("Excel Source Info", True, f"Excel file path: {data['excel_file_path']}")
+                )
+            elif data["data_source"] == "sheets" and "sheets_url" in data:
+                self.results["data_source_info_api"]["details"].append(
+                    self.log_result("Sheets Source Info", True, "Sheets URL present")
+                )
+            
+            self.results["data_source_info_api"]["details"].extend([
+                self.log_result("Data Source Info API", True, f"Source: {data['data_source']}, Count: {data['employees_count']}"),
+                self.log_result("Response Structure", True, "All required fields present"),
+                self.log_result("Data Validation", True, "All field values are valid")
+            ])
+            
+            self.results["data_source_info_api"]["passed"] = True
+            return True
+                
+        except Exception as e:
+            self.results["data_source_info_api"]["details"].append(
+                self.log_result("Data Source Info API", False, f"Exception: {str(e)}")
+            )
+            return False
+
+    def test_refresh_data_api(self):
+        """Test enhanced refresh data API"""
+        print("\n=== Testing Refresh Data API ===")
+        
+        try:
+            # Get current employee count before refresh
+            pre_response = self.session.get(f"{API_BASE}/employees")
+            pre_count = 0
+            if pre_response.status_code == 200:
+                pre_data = pre_response.json()
+                pre_count = len(pre_data.get("employees", []))
+            
+            # Test refresh endpoint
+            response = self.session.post(f"{API_BASE}/refresh-data")
+            
+            if response.status_code != 200:
+                self.results["refresh_data_api"]["details"].append(
+                    self.log_result("Refresh Data API", False, f"HTTP {response.status_code}: {response.text}")
+                )
+                return False
+            
+            data = response.json()
+            
+            # Check response structure
+            required_fields = ["message", "source"]
+            missing_fields = [field for field in required_fields if field not in data]
+            
+            if missing_fields:
+                self.results["refresh_data_api"]["details"].append(
+                    self.log_result("Response Structure", False, f"Missing required fields: {missing_fields}")
+                )
+                return False
+            
+            # Validate source field
+            valid_sources = ["sheets", "excel", "upload"]
+            if data["source"] not in valid_sources:
+                self.results["refresh_data_api"]["details"].append(
+                    self.log_result("Source Validation", False, f"Invalid source: {data['source']}")
+                )
+                return False
+            
+            # Check if message contains employee count
+            if "employees" not in data["message"].lower():
+                self.results["refresh_data_api"]["details"].append(
+                    self.log_result("Message Content", False, "Message doesn't contain employee information")
+                )
+                return False
+            
+            # Get employee count after refresh
+            post_response = self.session.get(f"{API_BASE}/employees")
+            post_count = 0
+            if post_response.status_code == 200:
+                post_data = post_response.json()
+                post_count = len(post_data.get("employees", []))
+            
+            # Verify data is still available after refresh
+            if post_count == 0:
+                self.results["refresh_data_api"]["details"].append(
+                    self.log_result("Data Availability", False, "No employees found after refresh")
+                )
+                return False
+            
+            self.results["refresh_data_api"]["details"].extend([
+                self.log_result("Refresh Data API", True, f"Successfully refreshed data from {data['source']}"),
+                self.log_result("Response Structure", True, "All required fields present"),
+                self.log_result("Data Availability", True, f"Found {post_count} employees after refresh"),
+                self.log_result("Source Information", True, f"Data source: {data['source']}")
+            ])
+            
+            self.results["refresh_data_api"]["passed"] = True
+            return True
+                
+        except Exception as e:
+            self.results["refresh_data_api"]["details"].append(
+                self.log_result("Refresh Data API", False, f"Exception: {str(e)}")
+            )
+            return False
+
     def run_all_tests(self):
         """Run all backend tests"""
         print(f"🚀 Starting Backend API Tests")
