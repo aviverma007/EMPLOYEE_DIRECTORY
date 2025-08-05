@@ -904,8 +904,6 @@ function App() {
                       { label: 'Designation', value: selectedEmployee.designation, icon: '⭐' },
                       { label: 'Location', value: selectedEmployee.location, icon: '📍' },
                       { label: 'Mobile', value: selectedEmployee.mobile, icon: '📱' },
-                      { label: 'Extension', value: selectedEmployee.extension_number, icon: '☎️' },
-                      { label: 'Email', value: selectedEmployee.email, icon: '📧' },
                       { label: 'Joining Date', value: selectedEmployee.joining_date, icon: '📅' }
                     ].filter(field => field.value).map((field, idx) => (
                       <div key={idx} className="bg-white bg-opacity-90 p-2 rounded-lg border border-blue-200 hover:shadow-md transition-shadow">
