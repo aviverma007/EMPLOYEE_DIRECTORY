@@ -106,6 +106,79 @@ button:active {
   @apply w-full h-full;
 }
 
+/* Hierarchy Builder Styles */
+.hierarchy-builder {
+  @apply w-full h-full;
+}
+
+.hierarchy-builder-content-new {
+  @apply flex flex-col gap-6 h-full;
+}
+
+.hierarchy-builder-panel {
+  @apply bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-blue-100 dark:border-gray-600;
+}
+
+.hierarchy-builder-manual {
+  @apply p-6;
+}
+
+.manual-builder-header {
+  @apply flex justify-between items-center mb-6 pb-4 border-b border-gray-200 dark:border-gray-600;
+}
+
+.manual-builder-header h3 {
+  @apply text-xl font-bold text-gray-800 dark:text-white;
+}
+
+.clear-all-btn {
+  @apply px-4 py-2 bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900 dark:text-red-300 dark:hover:bg-red-800 rounded-lg font-medium transition-colors;
+}
+
+.manual-builder-form {
+  @apply grid grid-cols-1 md:grid-cols-3 gap-6 mb-6;
+}
+
+.form-group {
+  @apply space-y-2;
+}
+
+.form-group label {
+  @apply block text-sm font-semibold text-gray-700 dark:text-gray-300;
+}
+
+.hierarchy-select {
+  @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white;
+}
+
+.add-relationship-btn {
+  @apply w-full md:col-span-3 mt-4 px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors shadow-lg hover:shadow-xl;
+}
+
+.hierarchy-stats {
+  @apply flex gap-6 p-4 bg-blue-50 dark:bg-gray-700 rounded-lg border border-blue-200 dark:border-gray-600;
+}
+
+.stat-item {
+  @apply flex flex-col;
+}
+
+.stat-label {
+  @apply text-xs font-medium text-gray-600 dark:text-gray-400 mb-1;
+}
+
+.stat-value {
+  @apply text-lg font-bold text-blue-600 dark:text-blue-400;
+}
+
+.manager-info {
+  @apply text-sm font-medium text-gray-700 dark:text-gray-300;
+}
+
+.no-manager {
+  @apply text-sm font-medium text-green-600 dark:text-green-400;
+}
+
 .hierarchy-builder-content {
   @apply flex gap-6 h-full;
 }
