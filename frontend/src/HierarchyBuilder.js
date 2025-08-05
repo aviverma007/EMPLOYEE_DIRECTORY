@@ -278,10 +278,10 @@ const HierarchyBuilder = ({ employees }) => {
     
     const renderEmployeeNode = (employee, level = 0) => {
       const hasDirectReports = employee.directReports && employee.directReports.length > 0;
-      const isExpanded = expandedNodes.has(employee.id);
+      const isExpanded = expandedNodes.has(employee.emp_code);
       
       return (
-        <div key={employee.id} className="org-chart-node-compact">
+        <div key={employee.emp_code} className="org-chart-node-compact">
           <div className="org-chart-card-compact">
             <div className="employee-avatar-compact">
               {employee.image_url ? (
@@ -302,7 +302,7 @@ const HierarchyBuilder = ({ employees }) => {
             <div className="card-actions">
               {hasDirectReports && (
                 <button 
-                  onClick={() => toggleNodeExpansion(employee.id)}
+                  onClick={() => toggleNodeExpansion(employee.emp_code)}
                   className="expand-btn"
                   title={isExpanded ? 'Collapse' : 'Expand'}
                 >
@@ -311,7 +311,7 @@ const HierarchyBuilder = ({ employees }) => {
                 </button>
               )}
               <button 
-                onClick={() => removeEmployeeFromHierarchy(employee.id)}
+                onClick={() => removeEmployeeFromHierarchy(employee.emp_code)}
                 className="remove-btn-compact"
                 title="Remove from hierarchy"
               >
@@ -338,7 +338,7 @@ const HierarchyBuilder = ({ employees }) => {
           <div className="empty-org-chart">
             <div className="text-4xl mb-4">🌳</div>
             <h3>No Hierarchy Created</h3>
-            <p>Start building your organization chart by adding employees from the left panel</p>
+            <p>Use the form above to build your organization hierarchy step by step</p>
           </div>
         ) : (
           <div className="org-chart-compact">
@@ -346,7 +346,7 @@ const HierarchyBuilder = ({ employees }) => {
               <h3>Organization Structure</h3>
               <div className="chart-controls">
                 <button 
-                  onClick={() => setExpandedNodes(new Set(hierarchyData.map(emp => emp.id)))}
+                  onClick={() => setExpandedNodes(new Set(hierarchyData.map(emp => emp.emp_code)))}
                   className="control-btn"
                 >
                   ⬇ Expand All
