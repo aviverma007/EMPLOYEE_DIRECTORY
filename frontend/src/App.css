@@ -101,6 +101,258 @@ button:active {
   transform: translateY(0);
 }
 
+/* Hierarchy Builder Styles */
+.hierarchy-builder {
+  @apply w-full h-full;
+}
+
+.hierarchy-builder-content {
+  @apply flex gap-6 h-full;
+}
+
+.employee-selection-panel {
+  @apply w-1/3 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-blue-100 dark:border-gray-600;
+}
+
+.hierarchy-view-panel {
+  @apply flex-1 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-blue-100 dark:border-gray-600;
+}
+
+.panel-header {
+  @apply p-4 border-b border-blue-100 dark:border-gray-600 flex justify-between items-center;
+}
+
+.panel-header h3 {
+  @apply text-xl font-bold text-gray-800 dark:text-white;
+}
+
+.search-container {
+  @apply mt-3;
+}
+
+.employee-search {
+  @apply w-full px-3 py-2 border border-blue-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white;
+}
+
+.employee-list {
+  @apply p-4 max-h-96 overflow-y-auto;
+}
+
+.employee-item {
+  @apply flex justify-between items-center p-3 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 mb-2 transition-colors;
+}
+
+.employee-item-info {
+  @apply flex items-center gap-3;
+}
+
+.employee-avatar-tiny {
+  @apply w-8 h-8 rounded-full object-cover;
+}
+
+.employee-avatar-tiny-placeholder {
+  @apply w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs font-bold;
+}
+
+.employee-name {
+  @apply font-semibold text-gray-800 dark:text-white text-sm;
+}
+
+.employee-details {
+  @apply text-xs text-gray-600 dark:text-gray-400;
+}
+
+.add-employee-btn {
+  @apply px-3 py-1 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors;
+}
+
+.view-controls {
+  @apply flex items-center gap-2;
+}
+
+.view-toggle {
+  @apply flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1;
+}
+
+.toggle-btn {
+  @apply px-4 py-2 text-sm font-medium rounded-md transition-all duration-200;
+}
+
+.toggle-btn.active {
+  @apply bg-blue-600 text-white shadow-lg;
+}
+
+.toggle-btn:not(.active) {
+  @apply text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600;
+}
+
+.hierarchy-content {
+  @apply flex-1 p-4 overflow-hidden;
+}
+
+/* Org Chart Styles */
+.org-chart-container {
+  @apply w-full h-full overflow-auto;
+}
+
+.empty-org-chart {
+  @apply text-center py-16 text-gray-500 dark:text-gray-400;
+}
+
+.empty-org-chart h3 {
+  @apply text-xl font-bold mb-2 text-gray-700 dark:text-gray-300;
+}
+
+.org-chart {
+  @apply flex justify-center py-8;
+}
+
+.org-chart-node {
+  @apply flex flex-col items-center relative;
+}
+
+.org-chart-card {
+  @apply bg-white dark:bg-gray-700 rounded-xl shadow-lg border-2 border-blue-100 dark:border-gray-600 p-4 m-2 relative max-w-xs hover:shadow-xl transition-all duration-300 hover:border-blue-300;
+}
+
+.employee-avatar {
+  @apply w-12 h-12 mx-auto mb-3;
+}
+
+.avatar-img {
+  @apply w-full h-full rounded-full object-cover border-2 border-white shadow-md;
+}
+
+.avatar-placeholder {
+  @apply w-full h-full rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-md;
+}
+
+.employee-info {
+  @apply text-center;
+}
+
+.employee-info h4 {
+  @apply font-bold text-gray-800 dark:text-white text-sm mb-1;
+}
+
+.employee-code {
+  @apply text-xs text-blue-600 dark:text-blue-400 font-medium mb-1;
+}
+
+.employee-designation {
+  @apply text-xs text-gray-600 dark:text-gray-300 mb-1;
+}
+
+.employee-department {
+  @apply text-xs text-gray-500 dark:text-gray-400;
+}
+
+.remove-btn {
+  @apply absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs hover:bg-red-600 transition-colors;
+}
+
+.org-chart-children {
+  @apply relative mt-4;
+}
+
+.org-chart-line {
+  @apply w-0.5 h-8 bg-blue-300 mx-auto relative;
+}
+
+.org-chart-line::after {
+  content: '';
+  @apply absolute top-full left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-blue-300;
+}
+
+.org-chart-children-container {
+  @apply flex gap-4 mt-4;
+}
+
+/* Table View Styles */
+.hierarchy-table-container {
+  @apply w-full h-full overflow-hidden;
+}
+
+.empty-hierarchy-table {
+  @apply text-center py-16 text-gray-500 dark:text-gray-400;
+}
+
+.empty-hierarchy-table h3 {
+  @apply text-xl font-bold mb-2 text-gray-700 dark:text-gray-300;
+}
+
+.hierarchy-table {
+  @apply w-full border-collapse;
+}
+
+.hierarchy-table th {
+  @apply bg-blue-50 dark:bg-gray-700 text-gray-800 dark:text-white font-semibold text-sm px-4 py-3 text-left border-b-2 border-blue-200 dark:border-gray-600;
+}
+
+.hierarchy-table td {
+  @apply px-4 py-3 border-b border-gray-200 dark:border-gray-600 text-sm;
+}
+
+.hierarchy-row:hover {
+  @apply bg-blue-25 dark:bg-gray-700;
+}
+
+.level-indicator {
+  @apply flex items-center gap-2;
+}
+
+.level-badge {
+  @apply w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold;
+}
+
+.level-indent {
+  @apply text-blue-400 font-mono;
+}
+
+.employee-cell {
+  @apply flex items-center gap-3;
+}
+
+.employee-avatar-small {
+  @apply w-8 h-8 rounded-full object-cover;
+}
+
+.employee-avatar-placeholder {
+  @apply w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs font-bold;
+}
+
+.employee-position {
+  @apply font-medium text-gray-800 dark:text-white;
+}
+
+.direct-reports {
+  @apply flex flex-col items-center;
+}
+
+.reports-count {
+  @apply text-lg font-bold text-blue-600 dark:text-blue-400;
+}
+
+.reports-label {
+  @apply text-xs text-gray-500 dark:text-gray-400;
+}
+
+.action-btn {
+  @apply px-3 py-1 text-xs rounded-lg font-medium transition-colors;
+}
+
+.action-btn.remove {
+  @apply bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900 dark:text-red-300 dark:hover:bg-red-800;
+}
+
+.no-employees {
+  @apply text-center py-8 text-gray-500 dark:text-gray-400;
+}
+
+button:active {
+  transform: translateY(0);
+}
+
 /* Subtle button shine effect */
 button::before {
   content: '';
