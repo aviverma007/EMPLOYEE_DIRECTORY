@@ -46,8 +46,8 @@ except Exception as e:
 
 # Configuration for data sources
 SHEETS_CSV_URL = os.environ.get('SHEETS_CSV_URL', "https://docs.google.com/spreadsheets/d/1z5MgsofbAdxCBlNY2wg1FBLap8lu-yk9/export?format=csv")
-EXCEL_FILE_PATH = os.environ.get('EXCEL_FILE_PATH', '/app/data/employees.xlsx')
-DATA_SOURCE = os.environ.get('DATA_SOURCE', 'sheets')  # 'sheets', 'excel', or 'upload'
+EXCEL_FILE_PATH = os.environ.get('EXCEL_FILE_PATH', r'C:\EmployeeDirectoryServer\EMPLOPYEE DIR.xlsx')
+DATA_SOURCE = os.environ.get('DATA_SOURCE', 'excel')  # 'sheets', 'excel', or 'upload'
 
 # In-memory storage for employee data
 employees_data = []
