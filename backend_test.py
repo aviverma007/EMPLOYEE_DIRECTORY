@@ -14,7 +14,7 @@ from datetime import datetime
 from PIL import Image
 
 # Backend URL from frontend/.env
-BACKEND_URL = "https://0254270c-2877-4553-82fe-fbe2dd1309c8.preview.emergentagent.com"
+BACKEND_URL = "https://e196105b-f971-4fa7-8b0c-2c252d1e865b.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 # Test employee codes from the review request
