@@ -58,11 +58,12 @@ if defined IP (
     )
     echo   
     echo   📊 Features Available:
-    echo   • Employee Directory
+    echo   • Employee Directory (Excel Data)
     echo   • Search & Filtering  
     echo   • Image Upload
     echo   • Attendance Tracking
     echo   • Hierarchy Builder
+    echo   📄 Data Source: C:\EmployeeDirectoryServer\EMPLOPYEE DIR.xlsx
     echo =====================================
 ) else (
     echo =====================================
