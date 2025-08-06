@@ -9,14 +9,18 @@
 git clone <your-repo-url> employee-directory
 cd employee-directory
 
-# 2. Run automatic setup
+# 2. Ensure your Excel file is at: C:\EmployeeDirectoryServer\EMPLOPYEE DIR.xlsx
+
+# 3. Run automatic setup
 setup_windows.bat
 
-# 3. Start the application
+# 4. Start the application
 start_server.bat
 
 # Access at: http://YOUR_SERVER_IP
 ```
+
+**Note**: This application is pre-configured to use Excel file at `C:\EmployeeDirectoryServer\EMPLOPYEE DIR.xlsx` as the primary data source.
 
 ### For Linux/Ubuntu Server
 
