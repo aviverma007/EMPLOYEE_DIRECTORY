@@ -28,24 +28,31 @@ C:\EmployeeDirectoryServer\EMPLOPYEE DIR.xlsx
 | 12345  | John Doe | IT         | NYC      | L3    | 123456 | 1001            |
 ```
 
-## 🚀 Quick Start (Windows)
+## 🚀 ONE COMMAND START ⚡
 
-### Prerequisites
-- **Node.js 16+**: [Download here](https://nodejs.org/)
-- **Python 3.9+**: [Download here](https://python.org/)
-- **MongoDB Community**: [Download here](https://www.mongodb.com/try/download/community)
+### Super Quick Start (Choose Any)
+```bash
+# Universal scripts (Linux/Mac/Windows)
+./run.sh          # Linux/Mac
+run.bat           # Windows
 
-### One-Click Setup
-```batch
-# Run automatic setup
-setup_windows.bat
+# Docker (Recommended - Zero setup)
+docker-compose up --build
 
-# Start the application  
-start_server.bat
+# NPM script (Cross-platform)
+npm start
 
-# Stop the application
-stop_server.bat
+# Direct command
+cd backend && python -m uvicorn server:app --host 0.0.0.0 --port 8001 --reload &
+cd frontend && yarn start
 ```
+
+### Prerequisites (For Local Dev Only)
+- **Node.js 16+**: [Download here](https://nodejs.org/)
+- **Python 3.8+**: [Download here](https://python.org/)
+- **MongoDB**: [Download here](https://www.mongodb.com/try/download/community)
+
+*Docker setup requires NO prerequisites - just Docker!*
 
 ### Manual Setup
 ```batch
