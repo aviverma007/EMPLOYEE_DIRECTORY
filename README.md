@@ -59,7 +59,8 @@ pip install -r requirements.txt
 # 2. Configure environment
 # Backend (.env in backend folder):
 MONGO_URL=mongodb://localhost:27017/employee_directory
-DATA_SOURCE=sheets
+EXCEL_FILE_PATH=C:\EmployeeDirectoryServer\EMPLOPYEE DIR.xlsx
+DATA_SOURCE=excel
 HOST=0.0.0.0
 PORT=8001
 
