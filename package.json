@@ -1,0 +1,54 @@
+{
+  "name": "employee-directory",
+  "version": "2.0.0",
+  "description": "Complete Employee Directory with Google Sheets integration, search, image upload, and hierarchy management",
+  "main": "index.js",
+  "scripts": {
+    "start": "node scripts/start-local.js",
+    "start:dev": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "start:docker": "docker-compose up --build",
+    "backend": "cd backend && python -m uvicorn server:app --host 0.0.0.0 --port 8001 --reload",
+    "frontend": "cd frontend && yarn start",
+    "build": "cd frontend && yarn build",
+    "build:backend": "cd backend && pip install -r requirements.txt",
+    "build:frontend": "cd frontend && yarn install && yarn build",
+    "build:all": "npm run build:backend && npm run build:frontend",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "cd backend && python -m pytest",
+    "test:frontend": "cd frontend && yarn test --watchAll=false",
+    "clean": "rm -rf frontend/node_modules frontend/build backend/venv backend/__pycache__",
+    "setup": "npm run build:all",
+    "deploy": "npm run build:all && npm run start:docker",
+    "logs": "docker-compose logs -f",
+    "stop": "docker-compose down",
+    "restart": "docker-compose restart",
+    "health": "curl -f http://localhost:8001/api/employees && curl -f http://localhost:3000"
+  },
+  "repository": {
+    "type": "git",
+    "url": "employee-directory"
+  },
+  "keywords": [
+    "employee",
+    "directory",
+    "fastapi",
+    "react",
+    "mongodb",
+    "google-sheets",
+    "fullstack"
+  ],
+  "author": "Employee Directory Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "python": ">=3.8.0"
+  },
+  "os": [
+    "win32",
+    "darwin",
+    "linux"
+  ]
+}
