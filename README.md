@@ -84,16 +84,21 @@ cd backend && python -m uvicorn server:app --host 0.0.0.0 --port 8001
 cd frontend && npx serve -s build -l 3000
 ```
 
-## 🌐 Access Points
+## 🌐 Access Your App
 
-### Single URL Access (with Nginx)
-- **Main Application**: `http://YOUR_SERVER_IP`
-- All features accessible through one URL
+### After Running Any Start Command:
+- **Main App**: `http://localhost` (Docker) or `http://localhost:3000` 
+- **Backend API**: `http://localhost:8001/api/`
+- **From Network**: `http://YOUR_IP:3000` (replace YOUR_IP with your actual IP)
 
-### Direct Access  
-- **Frontend**: `http://YOUR_SERVER_IP:3000`
-- **Backend API**: `http://YOUR_SERVER_IP:8001/api/`
-- **MongoDB**: `localhost:27017` (internal)
+### What You Get Instantly:
+✅ **Employee Directory** with Google Sheets data (640+ employees)  
+✅ **Advanced Search** with 6+ filter fields and suggestions  
+✅ **Image Upload** with drag-and-drop interface  
+✅ **Attendance System** with status tracking  
+✅ **Hierarchy Builder** with visual org chart  
+✅ **Modern UI** with glass-morphism design  
+✅ **Mobile Responsive** design
 
 ## 📋 System Requirements
 
