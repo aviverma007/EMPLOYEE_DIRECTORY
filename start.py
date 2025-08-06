@@ -83,8 +83,7 @@ def create_env_files():
     
     # Backend .env
     backend_env = """MONGO_URL=mongodb://localhost:27017/employee_directory
-DATA_SOURCE=sheets
-GOOGLE_SHEETS_URL=https://docs.google.com/spreadsheets/d/1bqpCqiYaP4cB7M0eaqfKL6Q9ZBfcJ2QiW8P9YqQA1cA/export?format=csv
+DATA_SOURCE=excel
 EXCEL_FILE_PATH=./data/EMPLOYEE_DIR.xlsx
 HOST=0.0.0.0
 PORT=8001
