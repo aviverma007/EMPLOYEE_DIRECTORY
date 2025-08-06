@@ -1,43 +1,42 @@
-# 🚀 Employee Directory - Ready to Clone!
+# 🚀 Employee Directory - Ready to Clone! (Excel Configured)
 
 ## 📦 Complete Package Ready
 
-Your Employee Directory application is now **COMPLETE** and ready to be cloned/downloaded. Here's everything included:
+Your Employee Directory application is now **COMPLETE** and **PRE-CONFIGURED for Excel** and ready to be cloned/downloaded. 
 
-## 🎯 What You Get
+## 🎯 Excel Integration Ready
 
-### ✅ Full-Stack Application
-- **Backend**: FastAPI server with 25+ API endpoints
-- **Frontend**: React application with professional UI
-- **Database**: MongoDB integration with 3 collections
-- **Features**: Search, filtering, image upload, hierarchy builder, attendance
+### ✅ Pre-Configured Excel Setup
+- **Primary Data Source**: Excel File
+- **Default File Path**: `C:\EmployeeDirectoryServer\EMPLOPYEE DIR.xlsx`
+- **Automatic Detection**: Application loads Excel data on startup
+- **No Configuration Needed**: Ready to use out of the box
 
-### ✅ One-Click Deployment
-- **Windows**: `setup_windows.bat` → `start_server.bat`
-- **Linux**: Complete deployment scripts and guides
-- **Single URL**: Professional Nginx configuration included
-
-### ✅ Complete Documentation
-- **README.md**: Comprehensive setup guide
-- **DEPLOYMENT.md**: Platform-specific instructions
-- **PROJECT_STRUCTURE.md**: File organization guide
+### ✅ Excel File Requirements
+Make sure your Excel file has these column headers:
+```
+| EMP ID | EMP NAME | DEPARTMENT | LOCATION | GRADE | MOBILE | EXTENSION NUMBER |
+|--------|----------|------------|----------|-------|--------|------------------|
+```
 
 ## 🔥 Quick Start Commands
 
 ### Windows Users (Easiest)
 ```batch
-# 1. Download/Clone this folder
-# 2. Open Command Prompt as Administrator
-# 3. Navigate to folder
+# 1. Ensure your Excel file is at: C:\EmployeeDirectoryServer\EMPLOPYEE DIR.xlsx
+# 2. Download/Clone this folder
+# 3. Open Command Prompt as Administrator
+# 4. Navigate to folder
 cd path\to\EMPLOYEE_DIRECTORY
 
-# 4. Run complete setup
+# 5. Run complete setup (pre-configured for Excel)
 setup_windows.bat
 
-# 5. Start application
+# 6. Start application
 start_server.bat
 
-# 6. Access at: http://[YOUR-SERVER-IP]
+# 7. Access at: http://[YOUR-SERVER-IP]
+# Your Excel data will load automatically!
 ```
 
 ### Linux/Mac Users
