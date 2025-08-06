@@ -35,12 +35,14 @@ echo.
 echo [4/7] Configuring Backend Environment...
 (
 echo MONGO_URL=mongodb://localhost:27017/employee_directory
-echo GOOGLE_SHEETS_URL=https://docs.google.com/spreadsheets/d/your_sheet_id/export?format=csv
-echo DATA_SOURCE=sheets
+echo EXCEL_FILE_PATH=C:\EmployeeDirectoryServer\EMPLOPYEE DIR.xlsx
+echo DATA_SOURCE=excel
 echo HOST=0.0.0.0
 echo PORT=8001
+echo SECRET_KEY=employee-directory-secret-key
+echo DEBUG=False
 ) > .env
-echo ✓ Backend environment configured
+echo ✓ Backend environment configured for Excel data source
 echo.
 
 echo [5/7] Configuring Frontend Environment...
