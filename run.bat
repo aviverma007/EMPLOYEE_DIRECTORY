@@ -73,8 +73,7 @@ echo [INFO] Setting up environment...
 REM Backend environment
 (
 echo MONGO_URL=mongodb://localhost:27017/employee_directory
-echo DATA_SOURCE=sheets
-echo GOOGLE_SHEETS_URL=https://docs.google.com/spreadsheets/d/1bqpCqiYaP4cB7M0eaqfKL6Q9ZBfcJ2QiW8P9YqQA1cA/export?format=csv
+echo DATA_SOURCE=excel
 echo EXCEL_FILE_PATH=./data/EMPLOYEE_DIR.xlsx
 echo HOST=0.0.0.0
 echo PORT=8001
