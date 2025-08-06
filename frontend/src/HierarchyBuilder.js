@@ -1,494 +1,206 @@
 import React, { useState, useEffect } from 'react';
 
 const HierarchyBuilder = ({ employees }) => {
-  const [hierarchyData, setHierarchyData] = useState([]);
-  const [viewMode, setViewMode] = useState('table'); // 'table' or 'org-chart'
-  const [expandedNodes, setExpandedNodes] = useState(new Set());
-  
-  // Hierarchy save/load states
-  const [savedHierarchies, setSavedHierarchies] = useState([]);
-  const [currentHierarchyId, setCurrentHierarchyId] = useState(null);
-  const [hierarchyName, setHierarchyName] = useState('');
-  const [showSaveDialog, setShowSaveDialog] = useState(false);
-  const [showLoadDialog, setShowLoadDialog] = useState(false);
-  
-  // Manual hierarchy building states
-  const [selectedDepartment, setSelectedDepartment] = useState('');
+  const [hierarchyData, setHierarchyData] = useState({});
+  const [searchTerm, setSearchTerm] = useState('');
+  const [viewMode, setViewMode] = useState('table'); // 'table' or 'chart'
+  const [selectedEmployee, setSelectedEmployee] = useState('');
   const [selectedManager, setSelectedManager] = useState('');
-  const [selectedSubordinate, setSelectedSubordinate] = useState('');
-  const [availableManagers, setAvailableManagers] = useState([]);
-  const [availableSubordinates, setAvailableSubordinates] = useState([]);
 
-  // Get unique departments
-  const departments = [...new Set(employees.map(emp => emp.department))].sort();
+  // Filter employees based on search
+  const filteredEmployees = employees.filter(emp =>
+    emp.emp_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    emp.emp_code.includes(searchTerm) ||
+    emp.department.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  // Backend URL
-  const backendUrl = process.env.REACT_APP_BACKEND_URL;
+  const addEmployeeToHierarchy = () => {
+    if (!selectedEmployee || !selectedManager) return;
 
-  // Load saved hierarchies on component mount
-  useEffect(() => {
-    loadSavedHierarchies();
-  }, []);
+    const employee = employees.find(emp => emp.emp_code === selectedEmployee);
+    const manager = employees.find(emp => emp.emp_code === selectedManager);
 
-  const loadSavedHierarchies = async () => {
-    try {
-      const response = await fetch(`${backendUrl}/api/hierarchy/list`);
-      if (response.ok) {
-        const data = await response.json();
-        setSavedHierarchies(data.hierarchies || []);
+    if (!employee || !manager) return;
+
+    setHierarchyData(prev => ({
+      ...prev,
+      [selectedEmployee]: {
+        ...employee,
+        manager: selectedManager,
+        managerName: manager.emp_name
       }
-    } catch (error) {
-      console.error('Error loading saved hierarchies:', error);
-    }
-  };
+    }));
 
-  const saveCurrentHierarchy = async () => {
-    if (!hierarchyName.trim()) {
-      alert('Please enter a name for the hierarchy');
-      return;
-    }
-
-    const hierarchyToSave = {
-      id: currentHierarchyId || undefined,
-      name: hierarchyName,
-      structure: {
-        hierarchyData: hierarchyData,
-        expandedNodes: Array.from(expandedNodes)
-      }
-    };
-
-    try {
-      const response = await fetch(`${backendUrl}/api/hierarchy/save`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(hierarchyToSave)
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        setCurrentHierarchyId(result.hierarchy_id);
-        setShowSaveDialog(false);
-        loadSavedHierarchies(); // Refresh the list
-        alert('Hierarchy saved successfully!');
-      } else {
-        alert('Failed to save hierarchy');
-      }
-    } catch (error) {
-      console.error('Error saving hierarchy:', error);
-      alert('Error saving hierarchy');
-    }
-  };
-
-  const loadHierarchy = async (hierarchyId) => {
-    try {
-      const response = await fetch(`${backendUrl}/api/hierarchy/${hierarchyId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setHierarchyData(data.structure.hierarchyData || []);
-        setExpandedNodes(new Set(data.structure.expandedNodes || []));
-        setCurrentHierarchyId(data.hierarchy_id);
-        setHierarchyName(data.name);
-        setShowLoadDialog(false);
-        alert(`Hierarchy "${data.name}" loaded successfully!`);
-      } else {
-        alert('Failed to load hierarchy');
-      }
-    } catch (error) {
-      console.error('Error loading hierarchy:', error);
-      alert('Error loading hierarchy');
-    }
-  };
-
-  const deleteHierarchy = async (hierarchyId) => {
-    if (!window.confirm('Are you sure you want to delete this hierarchy?')) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`${backendUrl}/api/hierarchy/${hierarchyId}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        loadSavedHierarchies(); // Refresh the list
-        if (currentHierarchyId === hierarchyId) {
-          setCurrentHierarchyId(null);
-          setHierarchyName('');
-        }
-        alert('Hierarchy deleted successfully!');
-      } else {
-        alert('Failed to delete hierarchy');
-      }
-    } catch (error) {
-      console.error('Error deleting hierarchy:', error);
-      alert('Error deleting hierarchy');
-    }
-  };
-
-  useEffect(() => {
-    if (selectedDepartment) {
-      // Get employees in selected department
-      const deptEmployees = employees.filter(emp => emp.department === selectedDepartment);
-      setAvailableManagers(deptEmployees);
-      setAvailableSubordinates(deptEmployees);
-    } else {
-      setAvailableManagers([]);
-      setAvailableSubordinates([]);
-    }
+    setSelectedEmployee('');
     setSelectedManager('');
-    setSelectedSubordinate('');
-  }, [selectedDepartment, employees]);
-
-  useEffect(() => {
-    if (selectedManager) {
-      // Filter subordinates to exclude the selected manager and anyone already in hierarchy
-      const usedEmployeeCodes = hierarchyData.map(h => h.emp_code);
-      const availableSubs = employees.filter(emp => 
-        emp.department === selectedDepartment && 
-        emp.emp_code !== selectedManager &&
-        !usedEmployeeCodes.includes(emp.emp_code)
-      );
-      setAvailableSubordinates(availableSubs);
-    }
-  }, [selectedManager, hierarchyData, selectedDepartment, employees]);
-
-  const clearAllHierarchy = () => {
-    setHierarchyData([]);
-    setSelectedDepartment('');
-    setSelectedManager('');
-    setSelectedSubordinate('');
-    setExpandedNodes(new Set());
-  };
-
-  const addHierarchyRelationship = () => {
-    if (!selectedManager || !selectedSubordinate) {
-      alert('Please select both manager and subordinate');
-      return;
-    }
-
-    const managerEmployee = employees.find(emp => emp.emp_code === selectedManager);
-    const subordinateEmployee = employees.find(emp => emp.emp_code === selectedSubordinate);
-
-    if (!managerEmployee || !subordinateEmployee) {
-      alert('Selected employees not found');
-      return;
-    }
-
-    // Check if manager already exists in hierarchy
-    const existingManagerIndex = hierarchyData.findIndex(h => h.emp_code === selectedManager);
-    
-    let newHierarchy = [...hierarchyData];
-    
-    if (existingManagerIndex >= 0) {
-      // Manager exists, add subordinate to their direct reports
-      const manager = newHierarchy[existingManagerIndex];
-      const subordinateWithLevel = {
-        ...subordinateEmployee,
-        level: manager.level + 1,
-        directReports: [],
-        directReportsCount: 0,
-        managerId: selectedManager
-      };
-      
-      manager.directReports.push(subordinateWithLevel);
-      manager.directReportsCount++;
-      
-      // Add subordinate to main hierarchy array
-      newHierarchy.push(subordinateWithLevel);
-    } else {
-      // Manager doesn't exist, add both manager and subordinate
-      const managerWithHierarchy = {
-        ...managerEmployee,
-        level: 0, // Will be recalculated based on their position
-        directReports: [],
-        directReportsCount: 0,
-        managerId: null
-      };
-      
-      const subordinateWithLevel = {
-        ...subordinateEmployee,
-        level: 1,
-        directReports: [],
-        directReportsCount: 0,
-        managerId: selectedManager
-      };
-      
-      managerWithHierarchy.directReports.push(subordinateWithLevel);
-      managerWithHierarchy.directReportsCount = 1;
-      
-      newHierarchy.push(managerWithHierarchy);
-      newHierarchy.push(subordinateWithLevel);
-    }
-
-    // Recalculate levels for all employees
-    const recalculatedHierarchy = recalculateLevels(newHierarchy);
-    setHierarchyData(recalculatedHierarchy);
-    
-    // Reset selections
-    setSelectedManager('');
-    setSelectedSubordinate('');
-  };
-
-  const recalculateLevels = (hierarchy) => {
-    const hierarchyMap = new Map();
-    hierarchy.forEach(emp => hierarchyMap.set(emp.emp_code, emp));
-    
-    // Find roots (employees with no manager in the hierarchy)
-    const roots = hierarchy.filter(emp => !emp.managerId || !hierarchyMap.has(emp.managerId));
-    
-    // Set root levels to 0
-    roots.forEach(root => root.level = 0);
-    
-    // Recursively set levels
-    const setLevelsRecursively = (employee, level) => {
-      employee.level = level;
-      employee.directReports.forEach(subordinate => {
-        const subordinateInHierarchy = hierarchyMap.get(subordinate.emp_code);
-        if (subordinateInHierarchy) {
-          setLevelsRecursively(subordinateInHierarchy, level + 1);
-        }
-      });
-    };
-    
-    roots.forEach(root => setLevelsRecursively(root, 0));
-    
-    return hierarchy;
   };
 
   const removeEmployeeFromHierarchy = (empCode) => {
-    // Remove employee and all their subordinates
-    const removeEmployeeAndSubordinates = (empToRemove, hierarchy) => {
-      // Find all subordinates of this employee
-      const subordinates = hierarchy.filter(emp => emp.managerId === empToRemove);
+    setHierarchyData(prev => {
+      const newData = { ...prev };
+      delete newData[empCode];
       
-      // Recursively remove subordinates
-      subordinates.forEach(sub => {
-        hierarchy = removeEmployeeAndSubordinates(sub.emp_code, hierarchy);
+      // Also remove this employee as manager for others
+      Object.keys(newData).forEach(key => {
+        if (newData[key].manager === empCode) {
+          delete newData[key].manager;
+          delete newData[key].managerName;
+        }
       });
       
-      // Remove the employee from their manager's direct reports
-      hierarchy.forEach(emp => {
-        emp.directReports = emp.directReports.filter(sub => sub.emp_code !== empToRemove);
-        emp.directReportsCount = emp.directReports.length;
-      });
-      
-      // Remove the employee from main hierarchy
-      return hierarchy.filter(emp => emp.emp_code !== empToRemove);
-    };
-
-    const updatedHierarchy = removeEmployeeAndSubordinates(empCode, [...hierarchyData]);
-    setHierarchyData(updatedHierarchy);
+      return newData;
+    });
   };
 
-  const toggleNodeExpansion = (nodeId) => {
-    const newExpanded = new Set(expandedNodes);
-    if (newExpanded.has(nodeId)) {
-      newExpanded.delete(nodeId);
-    } else {
-      newExpanded.add(nodeId);
+  const clearAllHierarchy = () => {
+    if (window.confirm('Are you sure you want to clear the entire hierarchy?')) {
+      setHierarchyData({});
     }
-    setExpandedNodes(newExpanded);
   };
 
-  const renderHierarchyBuilder = () => (
-    <div className="hierarchy-builder-manual">
-      <div className="manual-builder-header">
-        <h3>🏗️ Build Organization Hierarchy</h3>
-        <button 
-          onClick={clearAllHierarchy}
-          className="clear-all-btn"
-        >
-          🗑️ Clear All
-        </button>
-      </div>
+  const buildHierarchyTree = () => {
+    const tree = {};
+    const hierarchyArray = Object.values(hierarchyData);
+    
+    // Find root employees (those without managers)
+    const roots = hierarchyArray.filter(emp => !emp.manager);
+    
+    // Build tree structure
+    const buildNode = (employee) => {
+      const children = hierarchyArray.filter(emp => emp.manager === employee.emp_code);
+      return {
+        ...employee,
+        children: children.map(buildNode),
+        level: 0
+      };
+    };
+    
+    return roots.map(buildNode);
+  };
 
-      <div className="manual-builder-form">
-        {/* Department Selection */}
-        <div className="form-group">
-          <label>1. Select Department:</label>
-          <select 
-            value={selectedDepartment}
-            onChange={(e) => setSelectedDepartment(e.target.value)}
-            className="hierarchy-select"
-          >
-            <option value="">Choose Department...</option>
-            {departments.map(dept => (
-              <option key={dept} value={dept}>{dept}</option>
-            ))}
-          </select>
-        </div>
+  const flattenHierarchy = () => {
+    const tree = buildHierarchyTree();
+    const flattened = [];
+    
+    const flatten = (nodes, level = 0) => {
+      nodes.forEach(node => {
+        flattened.push({ ...node, level });
+        if (node.children && node.children.length > 0) {
+          flatten(node.children, level + 1);
+        }
+      });
+    };
+    
+    flatten(tree);
+    return flattened;
+  };
 
-        {selectedDepartment && (
-          <>
-            {/* Manager Selection */}
-            <div className="form-group">
-              <label>2. Select Manager:</label>
-              <select 
-                value={selectedManager}
-                onChange={(e) => setSelectedManager(e.target.value)}
-                className="hierarchy-select"
-              >
-                <option value="">Choose Manager...</option>
-                {availableManagers.map(emp => (
-                  <option key={emp.emp_code} value={emp.emp_code}>
-                    {emp.emp_name} (#{emp.emp_code}) - {emp.designation}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {selectedManager && (
-              <>
-                {/* Subordinate Selection */}
-                <div className="form-group">
-                  <label>3. Select Who Reports to {availableManagers.find(e => e.emp_code === selectedManager)?.emp_name}:</label>
-                  <select 
-                    value={selectedSubordinate}
-                    onChange={(e) => setSelectedSubordinate(e.target.value)}
-                    className="hierarchy-select"
-                  >
-                    <option value="">Choose Subordinate...</option>
-                    {availableSubordinates.map(emp => (
-                      <option key={emp.emp_code} value={emp.emp_code}>
-                        {emp.emp_name} (#{emp.emp_code}) - {emp.designation}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {selectedSubordinate && (
-                  <button 
-                    onClick={addHierarchyRelationship}
-                    className="add-relationship-btn"
-                  >
-                    ➕ Add Reporting Relationship
-                  </button>
-                )}
-              </>
-            )}
-          </>
-        )}
-      </div>
-
-      <div className="hierarchy-stats">
-        <div className="stat-item">
-          <span className="stat-label">Total Employees in Hierarchy:</span>
-          <span className="stat-value">{hierarchyData.length}</span>
-        </div>
-        <div className="stat-item">
-          <span className="stat-label">Departments:</span>
-          <span className="stat-value">{[...new Set(hierarchyData.map(h => h.department))].length}</span>
-        </div>
-      </div>
-    </div>
-  );
+  const getDirectReports = (empCode) => {
+    return Object.values(hierarchyData).filter(emp => emp.manager === empCode).length;
+  };
 
   const renderOrgChart = () => {
-    const rootEmployees = hierarchyData.filter(emp => emp.level === 0);
+    const tree = buildHierarchyTree();
     
-    const renderEmployeeNode = (employee, level = 0) => {
-      const hasDirectReports = employee.directReports && employee.directReports.length > 0;
-      const isExpanded = expandedNodes.has(employee.emp_code);
-      
+    if (tree.length === 0) {
       return (
-        <div key={employee.emp_code} className="org-chart-node-compact">
-          <div className="org-chart-card-compact">
-            <div className="employee-avatar-compact">
-              {employee.image_url ? (
-                <img src={employee.image_url} alt={employee.emp_name} className="avatar-img-compact" />
-              ) : (
-                <div className="avatar-placeholder-compact">
-                  {employee.emp_name.charAt(0)}
-                </div>
-              )}
-            </div>
-            <div className="employee-info-compact">
-              <h4>{employee.emp_name}</h4>
-              <p className="employee-code-compact">#{employee.emp_code}</p>
-              <p className="employee-designation-compact">{employee.designation}</p>
-              <p className="employee-department-compact">{employee.department}</p>
-            </div>
-            
-            <div className="card-actions">
-              {hasDirectReports && (
-                <button 
-                  onClick={() => toggleNodeExpansion(employee.emp_code)}
-                  className="expand-btn"
-                  title={isExpanded ? 'Collapse' : 'Expand'}
-                >
-                  {isExpanded ? '▼' : '▶'}
-                  <span className="reports-count-badge">{employee.directReports.length}</span>
-                </button>
-              )}
-              <button 
-                onClick={() => removeEmployeeFromHierarchy(employee.emp_code)}
-                className="remove-btn-compact"
-                title="Remove from hierarchy"
-              >
-                ✕
-              </button>
+        <div className="empty-org-chart">
+          <h3>No Hierarchy Built Yet</h3>
+          <p>Use the controls above to add employees and build your organizational structure.</p>
+        </div>
+      );
+    }
+
+    const renderNode = (node, level = 0) => (
+      <div key={node.emp_code} className="org-chart-node-compact">
+        <div className="org-chart-card-compact">
+          <div className="employee-avatar-compact">
+            {node.image_url ? (
+              <img
+                src={node.image_url}
+                alt={node.emp_name}
+                className="avatar-img-compact"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'flex';
+                }}
+              />
+            ) : null}
+            <div className={`avatar-placeholder-compact ${node.image_url ? 'hidden' : ''}`}>
+              {node.emp_name.charAt(0)}
             </div>
           </div>
           
-          {hasDirectReports && isExpanded && (
-            <div className="org-chart-children-compact">
-              <div className="org-chart-line-compact"></div>
-              <div className="org-chart-children-container-compact">
-                {employee.directReports.map(report => renderEmployeeNode(report, level + 1))}
-              </div>
-            </div>
-          )}
-        </div>
-      );
-    };
-
-    return (
-      <div className="org-chart-container-compact">
-        {rootEmployees.length === 0 ? (
-          <div className="empty-org-chart">
-            <div className="text-4xl mb-4">🌳</div>
-            <h3>No Hierarchy Created</h3>
-            <p>Use the form above to build your organization hierarchy step by step</p>
+          <div className="employee-info-compact">
+            <h4>{node.emp_name}</h4>
+            <div className="employee-code-compact">#{node.emp_code}</div>
+            <div className="employee-designation-compact">{node.designation}</div>
+            <div className="employee-department-compact">{node.department}</div>
           </div>
-        ) : (
-          <div className="org-chart-compact">
-            <div className="org-chart-header">
-              <h3>Organization Structure</h3>
-              <div className="chart-controls">
-                <button 
-                  onClick={() => setExpandedNodes(new Set(hierarchyData.map(emp => emp.emp_code)))}
-                  className="control-btn"
-                >
-                  ⬇ Expand All
-                </button>
-                <button 
-                  onClick={() => setExpandedNodes(new Set())}
-                  className="control-btn"
-                >
-                  ⬆ Collapse All
-                </button>
+
+          <div className="card-actions">
+            {node.children && node.children.length > 0 && (
+              <div className="expand-btn">
+                {node.children.length}
+                <div className="reports-count-badge">{node.children.length}</div>
               </div>
-            </div>
-            <div className="org-chart-grid">
-              {rootEmployees.map(employee => renderEmployeeNode(employee))}
+            )}
+            <button
+              onClick={() => removeEmployeeFromHierarchy(node.emp_code)}
+              className="remove-btn-compact"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+
+        {node.children && node.children.length > 0 && (
+          <div className="org-chart-children-compact">
+            <div className="org-chart-line-compact"></div>
+            <div className="org-chart-children-container-compact">
+              {node.children.map(child => renderNode(child, level + 1))}
             </div>
           </div>
         )}
       </div>
     );
+
+    return (
+      <div className="org-chart-container-compact">
+        <div className="org-chart-compact">
+          <div className="org-chart-header">
+            <h3>Organizational Chart</h3>
+            <div className="chart-controls">
+              <button className="control-btn" onClick={() => window.print()}>
+                🖨️ Print
+              </button>
+              <button className="control-btn" onClick={clearAllHierarchy}>
+                🗑️ Clear All
+              </button>
+            </div>
+          </div>
+          <div className="org-chart-grid">
+            {tree.map(root => renderNode(root))}
+          </div>
+        </div>
+      </div>
+    );
   };
 
-  const renderTableView = () => (
-    <div className="hierarchy-table-container">
-      {hierarchyData.length === 0 ? (
+  const renderTableView = () => {
+    const flatHierarchy = flattenHierarchy();
+    
+    if (flatHierarchy.length === 0) {
+      return (
         <div className="empty-hierarchy-table">
-          <div className="text-4xl mb-4">📊</div>
-          <h3>No Hierarchy Data</h3>
-          <p>Use the form above to build your organizational hierarchy</p>
+          <h3>No Hierarchy Built Yet</h3>
+          <p>Use the controls above to add employees and build your organizational structure.</p>
         </div>
-      ) : (
+      );
+    }
+
+    return (
+      <div className="hierarchy-table-container">
         <div className="overflow-x-auto">
           <table className="hierarchy-table">
             <thead>
@@ -498,92 +210,181 @@ const HierarchyBuilder = ({ employees }) => {
                 <th>Code</th>
                 <th>Position</th>
                 <th>Department</th>
-                <th>Manager</th>
                 <th>Direct Reports</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {hierarchyData
-                .sort((a, b) => a.level - b.level || a.emp_name.localeCompare(b.emp_name))
-                .map((employee, index) => {
-                  const manager = employee.managerId ? employees.find(e => e.emp_code === employee.managerId) : null;
-                  return (
-                    <tr key={employee.emp_code} className="hierarchy-row">
-                      <td>
-                        <div className="level-indicator">
-                          <div className="level-badge">{employee.level}</div>
-                          <div className="level-indent" style={{ paddingLeft: `${employee.level * 20}px` }}>
-                            {'└─'.repeat(employee.level > 0 ? 1 : 0)}
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="employee-cell">
-                          {employee.image_url ? (
-                            <img src={employee.image_url} alt={employee.emp_name} className="employee-avatar-small" />
-                          ) : (
-                            <div className="employee-avatar-placeholder">
-                              {employee.emp_name.charAt(0)}
-                            </div>
-                          )}
-                          <span className="employee-name">{employee.emp_name}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <span className="employee-code">#{employee.emp_code}</span>
-                      </td>
-                      <td>
-                        <span className="employee-position">{employee.designation}</span>
-                      </td>
-                      <td>
-                        <span className="employee-department">{employee.department}</span>
-                      </td>
-                      <td>
-                        {manager ? (
-                          <span className="manager-info">
-                            {manager.emp_name} (#{manager.emp_code})
-                          </span>
-                        ) : (
-                          <span className="no-manager">Top Level</span>
-                        )}
-                      </td>
-                      <td>
-                        <div className="direct-reports">
-                          <span className="reports-count">{employee.directReportsCount}</span>
-                          <span className="reports-label">Direct Reports</span>
-                        </div>
-                      </td>
-                      <td>
-                        <button 
-                          onClick={() => removeEmployeeFromHierarchy(employee.emp_code)}
-                          className="action-btn remove"
-                        >
-                          Remove
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
+              {flatHierarchy.map(employee => (
+                <tr key={employee.emp_code} className="hierarchy-row">
+                  <td>
+                    <div className="level-indicator">
+                      <span className="level-badge">{employee.level + 1}</span>
+                      <span className="level-indent">
+                        {'└─'.repeat(employee.level)}
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="employee-cell">
+                      {employee.image_url ? (
+                        <img
+                          src={employee.image_url}
+                          alt={employee.emp_name}
+                          className="employee-avatar-small"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <div className={`employee-avatar-placeholder ${employee.image_url ? 'hidden' : ''}`}>
+                        {employee.emp_name.charAt(0)}
+                      </div>
+                      <span className="employee-position">{employee.emp_name}</span>
+                    </div>
+                  </td>
+                  <td className="text-blue-600 font-mono text-sm">#{employee.emp_code}</td>
+                  <td className="text-gray-800 font-medium">{employee.designation}</td>
+                  <td className="text-gray-600">{employee.department}</td>
+                  <td>
+                    <div className="direct-reports">
+                      <span className="reports-count">{getDirectReports(employee.emp_code)}</span>
+                      <span className="reports-label">reports</span>
+                    </div>
+                  </td>
+                  <td>
+                    <button
+                      onClick={() => removeEmployeeFromHierarchy(employee.emp_code)}
+                      className="action-btn remove"
+                    >
+                      Remove
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
-      )}
-    </div>
-  );
+      </div>
+    );
+  };
+
+  const hierarchyStats = {
+    totalEmployees: Object.keys(hierarchyData).length,
+    totalLevels: Math.max(...flattenHierarchy().map(emp => emp.level + 1), 0),
+    rootEmployees: buildHierarchyTree().length
+  };
 
   return (
     <div className="hierarchy-builder">
       <div className="hierarchy-builder-content-new">
-        {/* Top Section - Manual Hierarchy Builder */}
+        {/* Manual Hierarchy Builder */}
         <div className="hierarchy-builder-panel">
-          {renderHierarchyBuilder()}
+          <div className="hierarchy-builder-manual">
+            <div className="manual-builder-header">
+              <h3>🏗️ Hierarchy Table Builder</h3>
+              <button onClick={clearAllHierarchy} className="clear-all-btn">
+                🗑️ Clear All
+              </button>
+            </div>
+
+            <div className="manual-builder-form">
+              <div className="form-group">
+                <label htmlFor="employee-select">Select Employee</label>
+                <select
+                  id="employee-select"
+                  value={selectedEmployee}
+                  onChange={(e) => setSelectedEmployee(e.target.value)}
+                  className="hierarchy-select"
+                >
+                  <option value="">Choose employee...</option>
+                  {employees
+                    .filter(emp => !hierarchyData[emp.emp_code]) // Only show employees not in hierarchy
+                    .map(emp => (
+                      <option key={emp.emp_code} value={emp.emp_code}>
+                        {emp.emp_name} (#{emp.emp_code}) - {emp.designation}
+                      </option>
+                    ))
+                  }
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="manager-select">Reports To (Manager)</label>
+                <select
+                  id="manager-select"
+                  value={selectedManager}
+                  onChange={(e) => setSelectedManager(e.target.value)}
+                  className="hierarchy-select"
+                >
+                  <option value="">Choose manager...</option>
+                  {employees
+                    .filter(emp => emp.emp_code !== selectedEmployee) // Can't report to themselves
+                    .map(emp => (
+                      <option key={emp.emp_code} value={emp.emp_code}>
+                        {emp.emp_name} (#{emp.emp_code}) - {emp.designation}
+                      </option>
+                    ))
+                  }
+                </select>
+              </div>
+
+              <div className="form-group">
+                <div className="mt-6">
+                  {selectedEmployee && selectedManager && (
+                    <div className="mb-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="manager-info">
+                        <strong>{employees.find(emp => emp.emp_code === selectedEmployee)?.emp_name}</strong>
+                        {' will report to '}
+                        <strong>{employees.find(emp => emp.emp_code === selectedManager)?.emp_name}</strong>
+                      </div>
+                    </div>
+                  )}
+                  {selectedEmployee && !selectedManager && (
+                    <div className="mb-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                      <div className="no-manager">
+                        <strong>{employees.find(emp => emp.emp_code === selectedEmployee)?.emp_name}</strong>
+                        {' will be a root level employee (no manager)'}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <button
+                onClick={addEmployeeToHierarchy}
+                disabled={!selectedEmployee}
+                className="add-relationship-btn disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                ➕ Add to Hierarchy
+              </button>
+            </div>
+
+            {/* Hierarchy Stats */}
+            {Object.keys(hierarchyData).length > 0 && (
+              <div className="hierarchy-stats">
+                <div className="stat-item">
+                  <span className="stat-label">Total Employees</span>
+                  <span className="stat-value">{hierarchyStats.totalEmployees}</span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-label">Hierarchy Levels</span>
+                  <span className="stat-value">{hierarchyStats.totalLevels}</span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-label">Root Employees</span>
+                  <span className="stat-value">{hierarchyStats.rootEmployees}</span>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Bottom Section - View Toggle and Results */}
+        {/* Hierarchy View Panel */}
         <div className="hierarchy-view-panel">
           <div className="panel-header">
-            <h3>🏗️ Organization Hierarchy</h3>
+            <h3>📊 Hierarchy View</h3>
             <div className="view-controls">
               <div className="view-toggle">
                 <button
@@ -593,15 +394,15 @@ const HierarchyBuilder = ({ employees }) => {
                   📊 Table
                 </button>
                 <button
-                  onClick={() => setViewMode('org-chart')}
-                  className={`toggle-btn ${viewMode === 'org-chart' ? 'active' : ''}`}
+                  onClick={() => setViewMode('chart')}
+                  className={`toggle-btn ${viewMode === 'chart' ? 'active' : ''}`}
                 >
                   🌳 Org Chart
                 </button>
               </div>
             </div>
           </div>
-
+          
           <div className="hierarchy-content">
             {viewMode === 'table' ? renderTableView() : renderOrgChart()}
           </div>
