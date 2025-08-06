@@ -132,13 +132,13 @@ GET    /api/hierarchy/list              # List hierarchies
 ### Data Sources
 Configure in backend `.env`:
 ```env
-# Google Sheets
+# Excel File (PRIMARY - Default)
+DATA_SOURCE=excel
+EXCEL_FILE_PATH=C:\EmployeeDirectoryServer\EMPLOPYEE DIR.xlsx
+
+# Google Sheets (Optional backup)
 DATA_SOURCE=sheets
 GOOGLE_SHEETS_URL=https://docs.google.com/spreadsheets/d/ID/export?format=csv
-
-# Excel File  
-DATA_SOURCE=excel
-EXCEL_FILE_PATH=/path/to/employees.xlsx
 
 # Upload (runtime)
 DATA_SOURCE=upload
