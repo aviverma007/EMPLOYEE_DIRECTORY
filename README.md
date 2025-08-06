@@ -1,18 +1,32 @@
 # Employee Directory - Complete Full-Stack Application
 
-A comprehensive Employee Directory application with Google Sheets integration, advanced search, image uploads, attendance tracking, and hierarchy management.
+A comprehensive Employee Directory application with **Excel file integration**, advanced search, image uploads, attendance tracking, and hierarchy management.
 
 ## 🌟 Features
 
 - **Employee Management**: Complete CRUD operations for employee data
-- **Google Sheets Integration**: Sync employee data from Google Sheets CSV
+- **Excel File Integration**: Load employee data from local Excel files (**Primary Data Source**)
+- **Google Sheets Support**: Optional sync from Google Sheets CSV (backup source)
 - **Advanced Search**: 6+ searchable fields with dropdown suggestions
 - **Image Upload**: Employee photo management with drag-and-drop
 - **Attendance Tracking**: Daily attendance with status indicators
 - **Hierarchy Builder**: Visual org chart and table view
 - **Responsive Design**: Mobile-friendly glass-morphism UI
 - **Dark/Light Theme**: Toggle between themes
-- **Excel Support**: Upload and process Excel files
+
+## 📊 Excel File Configuration
+
+### Default Excel File Location
+```
+C:\EmployeeDirectoryServer\EMPLOPYEE DIR.xlsx
+```
+
+### Required Excel Column Headers
+```
+| EMP ID | EMP NAME | DEPARTMENT | LOCATION | GRADE | MOBILE | EXTENSION NUMBER |
+|--------|----------|------------|----------|-------|--------|------------------|
+| 12345  | John Doe | IT         | NYC      | L3    | 123456 | 1001            |
+```
 
 ## 🚀 Quick Start (Windows)
 
