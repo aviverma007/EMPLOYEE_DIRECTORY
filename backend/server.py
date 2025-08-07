@@ -16,6 +16,10 @@ from PIL import Image
 import pandas as pd
 import openpyxl
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = FastAPI()
 
