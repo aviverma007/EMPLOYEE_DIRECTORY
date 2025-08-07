@@ -48,27 +48,25 @@ except Exception as e:
     db = None
     hierarchies_collection = None
 
-# Configuration for data sources
-SHEETS_CSV_URL = os.environ.get('SHEETS_CSV_URL', "https://docs.google.com/spreadsheets/d/1z5MgsofbAdxCBlNY2wg1FBLap8lu-yk9/export?format=csv")
-EXCEL_FILE_PATH = os.environ.get('EXCEL_FILE_PATH', r'C:\EmployeeDirectoryServer\EMPLOPYEE DIR.xlsx')
-DATA_SOURCE = os.environ.get('DATA_SOURCE', 'excel')  # 'sheets', 'excel', or 'upload'
+# Configuration for Excel data source only
+EXCEL_FILE_PATH = os.environ.get('EXCEL_FILE_PATH', '/app/EMPLOPYEE DIR.xlsx')
 
 # In-memory storage for employee data
 employees_data = []
 
-# Updated Column mapping - changed grade to designation, added extension number
+# Column mapping for Excel file - updated to match EMPLOPYEE DIR.xlsx structure
 COLUMN_MAPPING = {
     'EMP ID': 'emp_code',
     'EMP NAME': 'emp_name', 
     'DEPARTMENT': 'department',
     'LOCATION': 'location',
-    'GRADE': 'designation',  # Changed from 'grade' to 'designation'
+    'GRADE': 'designation',  # GRADE maps to designation
     'MOBILE': 'mobile',
     'EXTENSION NUMBER': 'extension_number',
-    'EMAIL': 'email',
-    'JOINING DATE': 'joining_date',
-    'IMAGE': 'image_url',
-    'REPORTING MANAGER': 'reporting_manager'
+    'EMAIL ID': 'email',
+    'DATE OF JOINING': 'joining_date',
+    'REPORTING MANAGER': 'reporting_manager',
+    'REPORTING ID': 'reporting_id'
 }
 
 class Employee(BaseModel):
@@ -81,8 +79,8 @@ class Employee(BaseModel):
     extension_number: Optional[str] = None
     email: Optional[str] = None
     joining_date: Optional[str] = None
-    image_url: Optional[str] = None
     reporting_manager: Optional[str] = None
+    reporting_id: Optional[str] = None
 
 class EmployeeImage(BaseModel):
     emp_code: str
@@ -192,6 +190,8 @@ def fetch_excel_data(file_path: str = None):
         
         # Read Excel file
         df = pd.read_excel(file_path, engine='openpyxl')
+        print(f"Reading Excel file: {file_path}")
+        print(f"Excel columns found: {df.columns.tolist()}")
         
         # Convert DataFrame to list of dictionaries
         employees_data = []
@@ -207,14 +207,15 @@ def fetch_excel_data(file_path: str = None):
                     if pd.isna(value):
                         employee[internal_field] = ""
                     else:
+                        # Convert all values to string and strip
                         employee[internal_field] = str(value).strip()
             
-            # Ensure all required fields exist
+            # Ensure all required fields exist and have valid values
             required_fields = ['emp_code', 'emp_name', 'department', 'location', 'designation', 'mobile']
-            if all(field in employee and employee[field] for field in required_fields):
+            if all(field in employee and employee[field] and employee[field] != 'nan' for field in required_fields):
                 employees_data.append(employee)
         
-        print(f"Loaded {len(employees_data)} employees from Excel file: {file_path}")
+        print(f"Successfully loaded {len(employees_data)} employees from Excel file")
         return True
         
     except Exception as e:
@@ -222,128 +223,55 @@ def fetch_excel_data(file_path: str = None):
         return False
 
 def fetch_employee_data():
-    """Fetch employee data based on configured data source"""
+    """Fetch employee data from Excel file"""
     global employees_data
     
-    current_data_source = os.environ.get('DATA_SOURCE', 'sheets')
+    if fetch_excel_data():
+        return
     
-    if current_data_source == 'excel':
-        if fetch_excel_data():
-            return
-    elif current_data_source == 'sheets':
-        if fetch_sheets_data():
-            return
-    
-    # Fallback to sample data if all sources fail
+    # Fallback to sample data if Excel file fails
     print("Using fallback sample data")
     use_sample_data()
-
-def fetch_sheets_data():
-    """Fetch employee data from Google Sheets (original implementation)"""
-    global employees_data
-    try:
-        response = requests.get(SHEETS_CSV_URL)
-        response.raise_for_status()
-        
-        # Parse CSV data
-        csv_data = response.text.strip()
-        lines = csv_data.split('\n')
-        
-        if not lines:
-            return False
-        
-        # Get headers
-        headers = [h.strip() for h in lines[0].split(',')]
-        employees_data = []
-        
-        # Process each row
-        for line in lines[1:]:
-            if not line.strip():
-                continue
-                
-            values = [v.strip() for v in line.split(',')]
-            employee = {}
-            
-            # Map columns to our schema
-            for i, header in enumerate(headers):
-                if i < len(values) and header in COLUMN_MAPPING:
-                    employee[COLUMN_MAPPING[header]] = values[i]
-            
-            # Ensure all required fields exist
-            required_fields = ['emp_code', 'emp_name', 'department', 'location', 'designation', 'mobile']
-            if all(field in employee for field in required_fields):
-                employees_data.append(employee)
-                
-        print(f"Loaded {len(employees_data)} employees from Google Sheets")
-        return True
-        
-    except Exception as e:
-        print(f"Error fetching Google Sheets data: {e}")
-        return False
 
 def use_sample_data():
     """Use sample data as fallback"""
     global employees_data
     employees_data = [
         {
-            "emp_code": "81096",
-            "emp_name": "ANIRUDH VERMA",
+            "emp_code": "80002",
+            "emp_name": "VIKAS MALHOTRA",
             "department": "IT",
-            "location": "IFC",
-            "designation": "IT EXECUTIVE",
-            "mobile": "8929987500",
-            "extension_number": "6857",
-            "email": "anirudh.verma@company.com",
-            "joining_date": "2023-03-15",
-            "reporting_manager": "CHANDAN"
-        },
-        {
-            "emp_code": "80957",
-            "emp_name": "BINAY KUMAR",
-            "department": "IT",
-            "location": "IFC",
-            "designation": "IT EXECUTIVE",
-            "mobile": "8929987500",
-            "extension_number": "0",
-            "email": "binay.kumar@company.com",
-            "joining_date": "2023-01-10",
-            "reporting_manager": "CHANDAN"
-        },
-        {
-            "emp_code": "80176",
-            "emp_name": "NEERAJ KALRA",
-            "department": "IT",
-            "location": "IFC",
-            "designation": "SENIOR MANAGER",
-            "mobile": "8929987500",
-            "extension_number": "6606",
-            "email": "neeraj.kalra@company.com",
-            "joining_date": "2022-08-20",
-            "reporting_manager": "NITIN GUPTA"
-        },
-        {
-            "emp_code": "00001",
-            "emp_name": "NITIN GUPTA",
-            "department": "IT",
-            "location": "IFC",
-            "designation": "AVP",
-            "mobile": "8929987500",
+            "location": "Delhi",
+            "designation": "MANAGER",
+            "mobile": "9876543210",
             "extension_number": "1001",
-            "email": "nitin.gupta@company.com",
-            "joining_date": "2020-05-12",
-            "reporting_manager": "HARI"
+            "email": "vikas.malhotra@company.com",
+            "joining_date": "2021-02-01",
+            "reporting_manager": "CEO"
         },
         {
-            "emp_code": "00002",
-            "emp_name": "CHANDAN",
-            "department": "IT",
-            "location": "IFC",
-            "designation": "SENIOR MANAGER",
-            "mobile": "8929987500",
+            "emp_code": "80024",
+            "emp_name": "JYOTSNA CHAUHAN",
+            "department": "HR",
+            "location": "Mumbai",
+            "designation": "HR EXECUTIVE",
+            "mobile": "9876543211",
             "extension_number": "1002",
-            "email": "chandan@company.com",
-            "joining_date": "2021-11-05",
-            "reporting_manager": "RANJEET SARKAR"
+            "email": "jyotsna.chauhan@company.com",
+            "joining_date": "2021-03-01",
+            "reporting_manager": "ASHISH JERATH"
+        },
+        {
+            "emp_code": "80056",
+            "emp_name": "PALLAV SAXENA",
+            "department": "Finance",
+            "location": "Bangalore",
+            "designation": "ACCOUNTANT",
+            "mobile": "9876543212",
+            "extension_number": "1003",
+            "email": "pallav.saxena@company.com",
+            "joining_date": "2021-05-04",
+            "reporting_manager": "CFO"
         }
     ]
 
@@ -604,10 +532,9 @@ async def get_field_values():
 
 @app.post("/api/refresh-data")
 async def refresh_employee_data():
-    """Manually refresh employee data from configured source"""
-    current_data_source = os.environ.get('DATA_SOURCE', 'sheets')
+    """Manually refresh employee data from Excel file"""
     fetch_employee_data()
-    return {"message": f"Data refreshed successfully. Loaded {len(employees_data)} employees.", "source": current_data_source}
+    return {"message": f"Data refreshed successfully. Loaded {len(employees_data)} employees from Excel file.", "source": "excel"}
 
 @app.post("/api/upload-excel")
 async def upload_excel_file(file: UploadFile = File(...)):
@@ -632,7 +559,6 @@ async def upload_excel_file(file: UploadFile = File(...)):
         if fetch_excel_data(file_path):
             # If successful, update the EXCEL_FILE_PATH environment variable for future refreshes
             os.environ['EXCEL_FILE_PATH'] = file_path
-            os.environ['DATA_SOURCE'] = 'excel'
             
             return {
                 "success": True,
@@ -651,20 +577,15 @@ async def upload_excel_file(file: UploadFile = File(...)):
 @app.get("/api/data-source-info")
 async def get_data_source_info():
     """Get information about current data source"""
-    current_data_source = os.environ.get('DATA_SOURCE', 'sheets')
-    current_excel_path = os.environ.get('EXCEL_FILE_PATH', '/app/data/employees.xlsx')
+    current_excel_path = os.environ.get('EXCEL_FILE_PATH', '/app/EMPLOPYEE DIR.xlsx')
     
     info = {
-        "data_source": current_data_source,
+        "data_source": "excel",
         "employees_count": len(employees_data),
-        "last_updated": datetime.now().isoformat()
+        "last_updated": datetime.now().isoformat(),
+        "excel_file_path": current_excel_path,
+        "file_exists": os.path.exists(current_excel_path)
     }
-    
-    if current_data_source == 'excel':
-        info["excel_file_path"] = current_excel_path
-        info["file_exists"] = os.path.exists(current_excel_path)
-    elif current_data_source == 'sheets':
-        info["sheets_url"] = SHEETS_CSV_URL
     
     return info
 
