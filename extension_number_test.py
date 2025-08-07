@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 # Backend URL from frontend/.env
-BACKEND_URL = "https://8badbb6b-b15b-44da-bb3b-bec8d6d08c50.preview.emergentagent.com"
+BACKEND_URL = "https://5affdf95-1307-470b-bc90-726ba20ec1cb.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 # Test employee codes from the review request
