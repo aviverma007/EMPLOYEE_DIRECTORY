@@ -22,19 +22,6 @@ const Toast = ({ message, type, onClose }) => {
   );
 };
 
-// Theme Toggle Component
-const ThemeToggle = ({ darkMode, toggleTheme }) => {
-  return (
-    <button
-      onClick={toggleTheme}
-      className="theme-toggle"
-      title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-    >
-      {darkMode ? '☀️' : '🌙'}
-    </button>
-  );
-};
-
 // Image Upload Component
 const ImageUpload = ({ employeeCode, currentImage, onImageUpdate, onClose }) => {
   const [dragActive, setDragActive] = useState(false);
@@ -190,7 +177,7 @@ const ImageUpload = ({ employeeCode, currentImage, onImageUpdate, onClose }) => 
 
         {/* Upload Area */}
         <div
-          className={`image-upload-container ${dragActive ? 'image-upload-active' : ''}`}
+          className={`upload-area ${dragActive ? 'active' : ''} ${uploading ? 'uploading' : ''}`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
@@ -202,50 +189,43 @@ const ImageUpload = ({ employeeCode, currentImage, onImageUpdate, onClose }) => 
             type="file"
             accept="image/*"
             onChange={handleFileInput}
-            className="hidden"
+            style={{ display: 'none' }}
           />
           
-          <div className="text-center">
-            <div className="text-4xl mb-4 text-blue-500">📸</div>
-            <p className="text-blue-800 font-semibold mb-2">
-              {dragActive ? 'Drop image here' : 'Click or drag image to upload'}
-            </p>
-            <p className="text-gray-600 text-sm">
-              Supports JPG, PNG, GIF, WEBP (Max 5MB)
-            </p>
-          </div>
+          {uploading ? (
+            <div className="upload-progress">
+              <div className="progress-circle">
+                <div className="progress-bar" style={{ width: `${uploadProgress}%` }}></div>
+              </div>
+              <p className="text-blue-600 font-semibold mt-2">Uploading... {uploadProgress}%</p>
+            </div>
+          ) : (
+            <>
+              <div className="upload-icon">📸</div>
+              <p className="text-gray-700 font-semibold mb-2">
+                {dragActive ? 'Drop image here' : 'Click or drag image here'}
+              </p>
+              <p className="text-gray-500 text-sm">
+                Supports: JPG, PNG, GIF, WEBP (Max 5MB)
+              </p>
+            </>
+          )}
         </div>
 
-        {/* Upload Progress */}
-        {uploading && (
-          <div className="mt-4">
-            <div className="flex justify-between text-sm text-gray-600 mb-2">
-              <span>Uploading...</span>
-              <span>{uploadProgress}%</span>
-            </div>
-            <div className="upload-progress">
-              <div 
-                className="upload-progress-bar"
-                style={{ width: `${uploadProgress}%` }}
-              ></div>
-            </div>
-          </div>
-        )}
-
-        {/* Actions */}
-        <div className="flex gap-4 mt-6">
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="flex-1 btn-primary disabled:opacity-50"
-          >
-            {uploading ? 'Uploading...' : 'Select Image'}
-          </button>
+        {/* Action Buttons */}
+        <div className="flex justify-between mt-6">
           <button
             onClick={onClose}
-            className="flex-1 btn-secondary"
+            className="btn-secondary px-6 py-2"
           >
             Cancel
+          </button>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="btn-primary px-6 py-2"
+            disabled={uploading}
+          >
+            Choose File
           </button>
         </div>
       </div>
@@ -254,8 +234,13 @@ const ImageUpload = ({ employeeCode, currentImage, onImageUpdate, onClose }) => 
 };
 
 function App() {
+  const [currentTab, setCurrentTab] = useState('directory');
   const [employees, setEmployees] = useState([]);
   const [filteredEmployees, setFilteredEmployees] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [attendance, setAttendance] = useState(null);
+  const [viewMode, setViewMode] = useState('card');
   const [searchFields, setSearchFields] = useState({
     emp_code: '',
     emp_name: '',
@@ -267,43 +252,15 @@ function App() {
   const [suggestions, setSuggestions] = useState({});
   const [showSuggestions, setShowSuggestions] = useState({});
   const [fieldValues, setFieldValues] = useState({});
-  const [viewMode, setViewMode] = useState('card');
-  const [currentTab, setCurrentTab] = useState('directory'); // New state for tab management
-  const [selectedEmployee, setSelectedEmployee] = useState(null);
-  const [attendance, setAttendance] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [showAllEmployees, setShowAllEmployees] = useState(false);
   const [showImageUpload, setShowImageUpload] = useState(false);
   const [toast, setToast] = useState(null);
-  const [darkMode, setDarkMode] = useState(false);
-  const [dataSource, setDataSource] = useState('sheets');
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL;
-
-  const toggleTheme = () => {
-    const newDarkMode = !darkMode;
-    setDarkMode(newDarkMode);
-    
-    if (newDarkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  };
 
   useEffect(() => {
     fetchAllEmployees();
     fetchFieldValues();
-    getDataSourceInfo();
-    
-    // Load theme preference from localStorage
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-      setDarkMode(true);
-      document.documentElement.classList.add('dark');
-    }
 
     // Close suggestions when clicking outside
     const handleClickOutside = (event) => {
@@ -560,19 +517,6 @@ function App() {
     }
   };
 
-  const getDataSourceInfo = async () => {
-    try {
-      const response = await fetch(`${backendUrl}/api/data-source-info`);
-      const result = await response.json();
-      
-      if (response.ok) {
-        setDataSource(result.data_source);
-      }
-    } catch (error) {
-      console.error('Error fetching data source info:', error);
-    }
-  };
-
   const searchFieldsConfig = [
     { key: 'emp_code', label: 'Employee Code', placeholder: 'Employee Code', icon: '🆔' },
     { key: 'emp_name', label: 'Employee Name', placeholder: 'Employee Name', icon: '👤' },
@@ -587,15 +531,14 @@ function App() {
 
   if (loading) {
     return (
-      <div className={`min-h-screen flex items-center justify-center transition-colors duration-300 ${darkMode ? 'dark bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-white'}`}>
-        <ThemeToggle darkMode={darkMode} toggleTheme={toggleTheme} />
-        <div className="text-center bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-2xl border-2 border-blue-100 dark:border-gray-600 glass-effect">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-white">
+        <div className="text-center bg-white rounded-2xl p-8 shadow-2xl border-2 border-blue-100 glass-effect">
           <div className="skeleton-image w-16 h-16 mx-auto mb-4 rounded-full"></div>
-          <p className="text-blue-800 dark:text-blue-200 text-xl font-semibold animate-pulse">Loading Employee Directory...</p>
+          <p className="text-blue-800 text-xl font-semibold animate-pulse">Loading Employee Directory...</p>
           <div className="mt-4 flex justify-center space-x-1">
-            <div className="w-2 h-2 bg-blue-600 dark:bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '0ms'}}></div>
-            <div className="w-2 h-2 bg-blue-600 dark:bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '150ms'}}></div>
-            <div className="w-2 h-2 bg-blue-600 dark:bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '300ms'}}></div>
+            <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{animationDelay: '0ms'}}></div>
+            <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{animationDelay: '150ms'}}></div>
+            <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{animationDelay: '300ms'}}></div>
           </div>
         </div>
       </div>
@@ -603,9 +546,7 @@ function App() {
   }
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'dark bg-gray-900' : 'bg-gradient-to-br from-blue-50 via-white to-blue-50'}`}>
-      {/* Theme Toggle */}
-      <ThemeToggle darkMode={darkMode} toggleTheme={toggleTheme} />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
       
       {/* Toast Notifications */}
       {toast && (
@@ -617,7 +558,7 @@ function App() {
       )}
 
       {/* Enhanced Header */}
-      <div className="header-professional shadow-professional dark:bg-gray-800 dark:border-gray-600">
+      <div className="header-professional shadow-professional">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             {/* Left side - Data control buttons */}
@@ -629,20 +570,14 @@ function App() {
               >
                 🔄 Refresh Data
               </button>
-              <div className="flex items-center px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm">
-                <span className="text-gray-600 dark:text-gray-300 mr-2">Source:</span>
-                <span className={`font-medium ${dataSource === 'excel' ? 'text-blue-600' : 'text-green-600'}`}>
-                  {dataSource === 'excel' ? '📊 Excel' : '📋 Google Sheets'}
-                </span>
-              </div>
             </div>
 
             {/* Center - Company title */}
             <div className="text-center flex-1">
-              <h1 className="text-5xl font-bold text-professional-primary dark:text-white mb-2 animate-fade-in">
+              <h1 className="text-5xl font-bold text-professional-primary mb-2 animate-fade-in">
                 SMARTWORLD DEVELOPERS PVT. LTD.
               </h1>
-              <p className="text-2xl font-semibold text-professional-secondary dark:text-gray-300">Employee Directory</p>
+              <p className="text-2xl font-semibold text-professional-secondary">Employee Directory</p>
             </div>
 
             {/* Right side - placeholder for future buttons */}
@@ -654,13 +589,13 @@ function App() {
       {/* Tab Navigation */}
       <div className="container mx-auto px-6 mb-6">
         <div className="glass-effect rounded-professional shadow-professional p-4 border-professional">
-          <div className="flex space-x-1 bg-gray-200 dark:bg-gray-700 rounded-lg p-1">
+          <div className="flex space-x-1 bg-gray-200 rounded-lg p-1">
             <button
               onClick={() => setCurrentTab('directory')}
               className={`flex-1 px-6 py-3 font-medium transition-all duration-200 rounded-md ${
                 currentTab === 'directory' 
                   ? 'bg-blue-600 text-white shadow-lg' 
-                  : 'text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
+                  : 'text-gray-700 hover:bg-gray-300'
               }`}
             >
               🏢 Employee Directory
@@ -670,7 +605,7 @@ function App() {
               className={`flex-1 px-6 py-3 font-medium transition-all duration-200 rounded-md ${
                 currentTab === 'hierarchy' 
                   ? 'bg-blue-600 text-white shadow-lg' 
-                  : 'text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
+                  : 'text-gray-700 hover:bg-gray-300'
               }`}
             >
               🌳 Hierarchy Builder
@@ -735,14 +670,14 @@ function App() {
             </div>
             
             <div className="flex items-center space-x-3">
-              <span className="text-professional-muted dark:text-gray-300 font-medium">View:</span>
-              <div className="flex bg-gray-200 dark:bg-gray-600 rounded-lg overflow-hidden">
+              <span className="text-professional-muted font-medium">View:</span>
+              <div className="flex bg-gray-200 rounded-lg overflow-hidden">
                 <button
                   onClick={() => setViewMode('card')}
                   className={`px-4 py-2 font-medium transition-all duration-200 ${
                     viewMode === 'card' 
                       ? 'bg-blue-600 text-white shadow-lg' 
-                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-500'
+                      : 'text-gray-700 hover:bg-gray-300'
                   }`}
                 >
                   🎴 Cards
@@ -752,7 +687,7 @@ function App() {
                   className={`px-4 py-2 font-medium transition-all duration-200 ${
                     viewMode === 'list' 
                       ? 'bg-blue-600 text-white shadow-lg' 
-                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-500'
+                      : 'text-gray-700 hover:bg-gray-300'
                   }`}
                 >
                   📋 List
@@ -767,8 +702,8 @@ function App() {
           {!hasActiveFilters && !showAllEmployees ? (
             <div className="text-center py-16 animate-fade-in">
               <div className="text-8xl mb-6 text-blue-400 animate-bounce">🔍</div>
-              <h3 className="text-professional-primary dark:text-white text-2xl font-bold mb-3">Discover Our Team</h3>
-              <p className="text-professional-secondary dark:text-gray-300 mb-8 text-lg">Use the advanced filters above to find employees</p>
+              <h3 className="text-professional-primary text-2xl font-bold mb-3">Discover Our Team</h3>
+              <p className="text-professional-secondary mb-8 text-lg">Use the advanced filters above to find employees</p>
               <button
                 onClick={viewAllEmployees}
                 className="btn-primary text-lg px-8 py-4 ripple"
@@ -779,8 +714,8 @@ function App() {
           ) : displayedEmployees.length === 0 ? (
             <div className="text-center py-16 animate-fade-in">
               <div className="text-8xl mb-6 text-gray-400">😔</div>
-              <h3 className="text-gray-600 dark:text-gray-300 text-xl font-bold mb-3">No Employees Found</h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-6">Try adjusting your search criteria</p>
+              <h3 className="text-gray-600 text-xl font-bold mb-3">No Employees Found</h3>
+              <p className="text-gray-500 mb-6">Try adjusting your search criteria</p>
               <button
                 onClick={clearAllFilters}
                 className="btn-primary ripple"
@@ -791,7 +726,7 @@ function App() {
           ) : (
             <>
               <div className="flex justify-between items-center mb-8">
-                <h2 className="text-2xl font-bold text-professional-primary dark:text-white animate-fade-in">
+                <h2 className="text-2xl font-bold text-professional-primary animate-fade-in">
                   Our Team ({displayedEmployees.length} {displayedEmployees.length === 1 ? 'Employee' : 'Employees'})
                 </h2>
               </div>
